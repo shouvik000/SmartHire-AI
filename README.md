@@ -103,12 +103,13 @@ PORT=3000
 # 📸 Screenshots
 
 - Landing Page
+![alt text]({793FD62A-A3A4-4CC8-81F7-C455BCCDFF5A}.png)
 - Dashboard
 - Jobs Page
 - Applications Page
 - Login Page
 
-(Add screenshots here after deployment.)
+
 
 ---
 
