@@ -50,7 +50,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Home
 // =======================
 app.get("/", (req, res) => {
-    res.redirect("/login");
+    res.render("index");
 });
 
 // =======================
