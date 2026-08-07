@@ -83,23 +83,39 @@ app.get("/db-test", async (req, res) => {
 // =======================
 app.get("/dashboard", isLoggedIn, async (req, res) => {
 
-    const totalJobs = await db.query(
-        "SELECT COUNT(*) FROM jobs"
-    );
+    try {
 
-    const totalUsers = await db.query(
-        "SELECT COUNT(*) FROM users"
-    );
+        const totalJobs = await db.query(
+            "SELECT COUNT(*) FROM jobs"
+        );
 
-    res.render("dashboard", {
+        const totalUsers = await db.query(
+            "SELECT COUNT(*) FROM users"
+        );
 
-        user: req.session.user,
+        const totalApplications = await db.query(
+            "SELECT COUNT(*) FROM applications"
+        );
 
-        totalJobs: totalJobs.rows[0].count,
+        res.render("dashboard", {
 
-        totalUsers: totalUsers.rows[0].count
+            user: req.session.user,
 
-    });
+            totalJobs: totalJobs.rows[0].count,
+
+            totalUsers: totalUsers.rows[0].count,
+
+            totalApplications: totalApplications.rows[0].count
+
+        });
+
+    } catch (err) {
+
+        console.log(err);
+
+        res.send(err.message);
+
+    }
 
 });
 
