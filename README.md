@@ -102,13 +102,16 @@ PORT=3000
 
 # 📸 Screenshots
 
-- Landing Page
-![alt text]({793FD62A-A3A4-4CC8-81F7-C455BCCDFF5A}.png)
-- Dashboard
-- Jobs Page
-- Applications Page
 - Login Page
-
+![Login page]({793FD62A-A3A4-4CC8-81F7-C455BCCDFF5A}.png)
+- Dashboard
+![Dashboard page]({13997D49-C76A-4F93-BB7B-F4014680DA19}.png)
+- Jobs Page
+![Jobs page]({AC22891A-FF62-495B-B5C1-56EDAE3AE9C0}-1.png)
+- Applications Page
+![Application page]({29853533-F0F9-4B31-A4B8-E1099DADEE12}.png)
+- Landing Page
+ [Landing Page]({FD8E5922-5526-4C3F-B7EE-17BA4629932A}-1.png)
 
 
 ---
