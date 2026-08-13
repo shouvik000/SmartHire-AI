@@ -399,9 +399,9 @@ SmartHire AI is deployed using **Render**.
 | | |
 |---|---|
 | **🏠 Landing Page** | ![Landing Page](./public/screenshots/Landing.png) |
-| **🔐 Login Page** | ![Login Page](./public/screenshots/login.png) |
-| **📊 Dashboard** | ![Dashboard](./public/screenshots/dashboard1.png) |
-| **📊 Dashboard footer** | ![Dashboard](./public/screenshots/dashboard2.png) |                             
+| **🔐 Login Page** | ![Login Page](./public/screenshots/Login.png) |
+| **📊 Dashboard** | ![Dashboard](./public/screenshots/Dashboard1.png) |
+| **📊 Dashboard footer** | ![Dashboard](./public/screenshots/Dashboard2.png) |                             
 | **💼 Jobs Page** | ![Jobs Page](public/screenshots/jobs.png) |
 | **📋 Applications** | ![Applications](./public/screenshots/Application.png) |
 | **📋 Applications List** | ![Applications list](./public/screenshots/ApplicationL1.png) |
