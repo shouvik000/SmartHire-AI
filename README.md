@@ -398,14 +398,15 @@ SmartHire AI is deployed using **Render**.
 
 | | |
 |---|---|
-| **🏠 Landing Page** | ![Landing Page](public/screenshots/landing.png) |
-| **🔐 Login Page** | ![Login Page](public/screenshots/login.png) |
-| **📊 Dashboard** | ![Dashboard](public/screenshots/dashboard.png) |
+| **🏠 Landing Page** | ![Landing Page](./public/screenshots/Landing.png) |
+| **🔐 Login Page** | ![Login Page](./public/screenshots/login.png) |
+| **📊 Dashboard** | ![Dashboard](./public/screenshots/dashboard1.png) |
+| **📊 Dashboard footer** | ![Dashboard](./public/screenshots/dashboard2.png) |                             
 | **💼 Jobs Page** | ![Jobs Page](public/screenshots/jobs.png) |
-| **📋 Applications** | ![Applications](public/screenshots/applications.png) |
-
-> Screenshot files should live in `public/screenshots/` with the names above so they render correctly on GitHub.
-
+| **📋 Applications** | ![Applications](./public/screenshots/Application.png) |
+| **📋 Applications List** | ![Applications list](./public/screenshots/ApplicationL1.png) |
+| **📋 Applications list end part** | ![Applications](./public/screenshots/ApplicationL2.png) |
+| **📋 Calculate Resume percentage** | ![Percentage](./public/screenshots/calculate%20percentage.png) |
 ---
 
 ## 🚀 Future Improvements
