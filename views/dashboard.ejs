@@ -3,155 +3,815 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
 
-<title>Dashboard | SmartHire AI</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Dashboard | SmartHire AI</title>
 
-<style>
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
 
-body{
-    background:#f4f6f9;
-}
+    <style>
 
-.card{
-    border:none;
-    border-radius:15px;
-}
+        * {
+            box-sizing: border-box;
+        }
 
-.stat-card{
-    transition:0.3s;
-}
+        body {
+            margin: 0;
+            background: #f5f7fb;
+            font-family: Arial, sans-serif;
+            color: #212529;
+        }
 
-.stat-card:hover{
-    transform:translateY(-6px);
-}
 
-</style>
+        /* =====================================
+           NAVBAR
+        ===================================== */
+
+        .navbar-custom {
+            background: #111827;
+            padding: 16px 0;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand:hover {
+            color: white;
+        }
+
+        .brand-icon {
+            display: inline-flex;
+            width: 38px;
+            height: 38px;
+            align-items: center;
+            justify-content: center;
+            background: #2563eb;
+            border-radius: 10px;
+            margin-right: 8px;
+        }
+
+        .welcome-text {
+            color: #d1d5db;
+            margin-right: 15px;
+        }
+
+
+        /* =====================================
+           HERO
+        ===================================== */
+
+        .hero {
+            background: linear-gradient(
+                135deg,
+                #1d4ed8,
+                #2563eb,
+                #4f46e5
+            );
+
+            border-radius: 22px;
+
+            padding: 38px;
+
+            color: white;
+
+            box-shadow:
+                0 15px 35px rgba(37, 99, 235, 0.18);
+
+            position: relative;
+
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: "AI";
+
+            position: absolute;
+
+            right: 35px;
+            top: 15px;
+
+            font-size: 120px;
+
+            font-weight: 900;
+
+            color: rgba(255,255,255,0.08);
+        }
+
+        .hero h1 {
+            font-size: 34px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: #dbeafe;
+            max-width: 650px;
+            margin-bottom: 0;
+        }
+
+
+        /* =====================================
+           STAT CARDS
+        ===================================== */
+
+        .stat-card {
+            border: none;
+            border-radius: 18px;
+
+            background: white;
+
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.06);
+
+            transition: 0.25s;
+
+            height: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+
+            box-shadow:
+                0 14px 30px rgba(0,0,0,0.10);
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+
+            border-radius: 14px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 24px;
+
+            margin-bottom: 18px;
+        }
+
+        .users-icon {
+            background: #e0e7ff;
+        }
+
+        .jobs-icon {
+            background: #dcfce7;
+        }
+
+        .applications-icon {
+            background: #fef3c7;
+        }
+
+        .stat-title {
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+
+        /* =====================================
+           QUICK ACTIONS
+        ===================================== */
+
+        .section-title {
+            font-weight: 700;
+            font-size: 22px;
+        }
+
+        .action-card {
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 25px;
+
+            height: 100%;
+
+            text-decoration: none;
+
+            color: #212529;
+
+            display: block;
+
+            border: 1px solid #edf0f5;
+
+            transition: 0.25s;
+        }
+
+        .action-card:hover {
+            color: #212529;
+
+            transform: translateY(-5px);
+
+            box-shadow:
+                0 12px 28px rgba(0,0,0,0.08);
+        }
+
+        .action-icon {
+            width: 55px;
+            height: 55px;
+
+            border-radius: 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 25px;
+
+            margin-bottom: 18px;
+        }
+
+        .blue-action {
+            background: #dbeafe;
+        }
+
+        .green-action {
+            background: #dcfce7;
+        }
+
+        .purple-action {
+            background: #ede9fe;
+        }
+
+        .action-card h5 {
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        .action-card p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+
+        /* =====================================
+           AI SECTION
+        ===================================== */
+
+        .ai-card {
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 28px;
+
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.05);
+        }
+
+        .ai-icon {
+            width: 55px;
+            height: 55px;
+
+            background: #ede9fe;
+
+            border-radius: 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 26px;
+        }
+
+        .ai-badge {
+            background: #ede9fe;
+            color: #6d28d9;
+
+            padding: 6px 12px;
+
+            border-radius: 20px;
+
+            font-size: 12px;
+
+            font-weight: 700;
+        }
+
+
+        /* =====================================
+           FLOATING APPLICATION BUTTON
+        ===================================== */
+
+        .applications-floating-btn {
+
+            position: fixed;
+
+            right: 28px;
+
+            bottom: 28px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 9px;
+
+            background: #2563eb;
+
+            color: white;
+
+            text-decoration: none;
+
+            padding: 14px 20px;
+
+            border-radius: 50px;
+
+            font-weight: 600;
+
+            box-shadow:
+                0 8px 25px rgba(37,99,235,0.35);
+
+            transition: 0.25s;
+
+            z-index: 1000;
+        }
+
+        .applications-floating-btn:hover {
+
+            background: #1d4ed8;
+
+            color: white;
+
+            transform: translateY(-4px);
+
+            box-shadow:
+                0 12px 30px rgba(37,99,235,0.45);
+        }
+
+
+        /* =====================================
+           FOOTER
+        ===================================== */
+
+        .footer {
+
+            text-align: center;
+
+            color: #9ca3af;
+
+            font-size: 13px;
+
+            padding: 35px 0 25px;
+        }
+
+
+        /* =====================================
+           MOBILE
+        ===================================== */
+
+        @media (max-width: 768px) {
+
+            .hero {
+                padding: 28px;
+            }
+
+            .hero h1 {
+                font-size: 27px;
+            }
+
+            .welcome-text {
+                display: none;
+            }
+
+        }
+
+
+        @media (max-width: 576px) {
+
+            .applications-floating-btn {
+
+                right: 15px;
+
+                bottom: 15px;
+
+                width: 52px;
+
+                height: 52px;
+
+                padding: 0;
+
+                justify-content: center;
+
+            }
+
+            .applications-floating-btn span {
+
+                display: none;
+
+            }
+
+        }
+
+    </style>
 
 </head>
 
+
 <body>
 
-<nav class="navbar navbar-dark bg-dark">
 
-<div class="container">
+<!-- =====================================
+     NAVBAR
+===================================== -->
 
-<a class="navbar-brand fw-bold" href="/dashboard">
+<nav class="navbar-custom">
 
-🚀 SmartHire AI
+    <div class="container">
 
-</a>
+        <div class="d-flex justify-content-between align-items-center">
 
-<div>
 
-<span class="text-white me-3">
+            <!-- BRAND -->
 
-Welcome, <%= user.name %>
+            <a
+                href="/dashboard"
+                class="brand"
+            >
 
-</span>
+                <span class="brand-icon">
+                    🤖
+                </span>
 
-<a href="/jobs" class="btn btn-outline-light">
+                SmartHire AI
 
-Jobs
+            </a>
 
-</a>
 
-</div>
+            <!-- RIGHT -->
 
-</div>
+            <div class="d-flex align-items-center">
+
+                <span class="welcome-text">
+
+                    Welcome,
+                    <strong>
+                        <%= user.name %>
+                    </strong>
+
+                </span>
+
+
+                <a
+                    href="/jobs"
+                    class="btn btn-outline-light btn-sm me-2"
+                >
+
+                    💼 Jobs
+
+                </a>
+
+
+                <a
+                   href="/logout"
+                   class="btn btn-outline-light btn-sm"
+                   onclick="return confirm('Are you sure you want to logout?');">
+
+                   🚪 Logout
+
+               </a>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </nav>
 
-<div class="container mt-5">
 
-<h2 class="mb-4">
 
-Dashboard
+<!-- =====================================
+     MAIN
+===================================== -->
 
-</h2>
+<div class="container mt-5 mb-5">
 
-<div class="row">
 
-<div class="col-md-4">
+    <!-- HERO -->
 
-<div class="card bg-primary text-white shadow stat-card">
+    <div class="hero mb-5">
 
-<div class="card-body">
+        <h1>
 
-<h5>Total Users</h5>
+            Welcome back,
+            <%= user.name %>! 👋
 
-<h1><%= totalUsers %></h1>
+        </h1>
+
+        <p>
+
+            Manage your recruitment activities,
+            discover talented candidates and use
+            AI-powered resume matching to find
+            the right people for your jobs.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =================================
+         STATISTICS
+    ================================= -->
+
+    <div class="row g-4 mb-5">
+
+
+        <!-- USERS -->
+
+        <div class="col-md-4">
+
+            <div class="stat-card">
+
+                <div class="card-body p-4">
+
+                    <div class="stat-icon users-icon">
+                        👥
+                    </div>
+
+                    <div class="stat-title">
+                        TOTAL USERS
+                    </div>
+
+                    <h2 class="stat-number">
+                        <%= totalUsers %>
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- JOBS -->
+
+        <div class="col-md-4">
+
+            <div class="stat-card">
+
+                <div class="card-body p-4">
+
+                    <div class="stat-icon jobs-icon">
+                        💼
+                    </div>
+
+                    <div class="stat-title">
+                        TOTAL JOBS
+                    </div>
+
+                    <h2 class="stat-number">
+                        <%= totalJobs %>
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- APPLICATIONS -->
+
+        <div class="col-md-4">
+
+            <div class="stat-card">
+
+                <div class="card-body p-4">
+
+                    <div class="stat-icon applications-icon">
+                        📩
+                    </div>
+
+                    <div class="stat-title">
+                        TOTAL APPLICATIONS
+                    </div>
+
+                    <h2 class="stat-number">
+                        <%= totalApplications %>
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =================================
+         QUICK ACTIONS
+    ================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+
+        <div>
+
+            <h3 class="section-title mb-1">
+                Quick Actions
+            </h3>
+
+            <p class="text-muted">
+                Get started with SmartHire AI
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="row g-4 mb-5">
+
+
+        <!-- VIEW JOBS -->
+
+        <div class="col-md-4">
+
+            <a
+                href="/jobs"
+                class="action-card"
+            >
+
+                <div class="action-icon blue-action">
+                    💼
+                </div>
+
+                <h5>
+                    Explore Jobs
+                </h5>
+
+                <p>
+                    Browse available jobs and
+                    discover new opportunities.
+                </p>
+
+            </a>
+
+        </div>
+
+
+        <!-- POST JOB -->
+
+        <div class="col-md-4">
+
+            <a
+                href="/jobs/add"
+                class="action-card"
+            >
+
+                <div class="action-icon green-action">
+                    ➕
+                </div>
+
+                <h5>
+                    Post a Job
+                </h5>
+
+                <p>
+                    Create a new job listing and
+                    find suitable candidates.
+                </p>
+
+            </a>
+
+        </div>
+
+
+        <!-- APPLICATIONS -->
+
+        <div class="col-md-4">
+
+            <a
+                href="/applications"
+                class="action-card"
+            >
+
+                <div class="action-icon purple-action">
+                    📋
+                </div>
+
+                <h5>
+                    My Applications
+                </h5>
+
+                <p>
+                    Review candidates who applied
+                    to your posted jobs.
+                </p>
+
+            </a>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =================================
+         AI FEATURE
+    ================================= -->
+
+    <div class="ai-card mb-4">
+
+        <div class="d-flex align-items-center">
+
+
+            <div class="ai-icon me-3">
+                🤖
+            </div>
+
+
+            <div class="flex-grow-1">
+
+                <div class="d-flex align-items-center gap-2 mb-1">
+
+                    <h5 class="mb-0">
+                        AI Resume Matching
+                    </h5>
+
+                    <span class="ai-badge">
+                        SMART FEATURE
+                    </span>
+
+                </div>
+
+                <p class="text-muted mb-0">
+
+                    Automatically compare candidate
+                    resumes with required job skills
+                    and generate a match score.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        🤖 SmartHire AI
+
+        <br>
+
+        AI-powered job recruitment platform
+
+    </div>
+
 
 </div>
 
-</div>
 
-</div>
 
-<div class="col-md-4">
+<!-- =====================================
+     FLOATING APPLICATION BUTTON
+===================================== -->
 
-<div class="card bg-success text-white shadow stat-card">
+<a
+    href="/applications"
+    class="applications-floating-btn"
+    title="View Applications"
+>
 
-<div class="card-body">
+    📋
 
-<h5>Total Jobs</h5>
-
-<h1><%= totalJobs %></h1>
-
-</div>
-
-</div>
-
-</div>
-
-<div class="col-md-4">
-
-<div class="card bg-warning text-dark shadow stat-card">
-
-<div class="card-body">
-
-<h5>Total Applications</h5>
-
-<h1><%= totalApplications %></h1>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<hr class="my-5">
-
-<div class="row">
-
-<div class="col-md-6 d-grid">
-
-<a href="/jobs" class="btn btn-primary btn-lg">
-
-💼 View Jobs
+    <span>
+        Applications
+    </span>
 
 </a>
 
-</div>
-
-<div class="col-md-6 d-grid">
-
-<a href="/jobs/add" class="btn btn-success btn-lg">
-
-➕ Post New Job
-
-</a>
-
-</div>
-
-</div>
-
-</div>
 
 </body>
 

@@ -13,128 +13,285 @@ const { isLoggedIn } = require("./middleware/authMiddleware");
 
 const app = express();
 
-// =======================
-// Test Database
-// =======================
-db.query("SELECT NOW()")
-    .then(() => console.log("✅ PostgreSQL Connected"))
-    .catch(err => console.error("❌ Database Error:", err.message));
 
-// =======================
-// Middleware
-// =======================
-app.use(express.urlencoded({ extended: true }));
+// ==========================================
+// DATABASE CONNECTION TEST
+// ==========================================
+
+db.query("SELECT NOW()")
+    .then(() => {
+        console.log("✅ PostgreSQL Connected");
+    })
+    .catch((err) => {
+        console.error(
+            "❌ Database Error:",
+            err.message
+        );
+    });
+
+
+// ==========================================
+// MIDDLEWARE
+// ==========================================
+
+app.use(
+    express.urlencoded({
+        extended: true
+    })
+);
+
 app.use(express.json());
+
+
+// ==========================================
+// SESSION
+// IMPORTANT: MUST COME BEFORE ROUTES
+// ==========================================
 
 app.use(
     session({
         secret: process.env.SESSION_SECRET,
         resave: false,
-        saveUninitialized: false,
+        saveUninitialized: false
     })
 );
 
-// =======================
-// View Engine
-// =======================
+
+// ==========================================
+// VIEW ENGINE
+// ==========================================
+
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
 
-// =======================
-// Static Files
-// =======================
-app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.set(
+    "views",
+    path.join(__dirname, "views")
+);
 
-// =======================
-// Home
-// =======================
+
+// ==========================================
+// STATIC FILES
+// ==========================================
+
+app.use(
+    express.static(
+        path.join(__dirname, "public")
+    )
+);
+
+
+// ==========================================
+// RESUME UPLOADS
+// ==========================================
+
+app.use(
+    "/uploads",
+    express.static(
+        path.join(__dirname, "uploads")
+    )
+);
+
+
+// ==========================================
+// HOME PAGE
+// ==========================================
+
 app.get("/", (req, res) => {
+
     res.render("index");
+
 });
 
-// =======================
-// Database Test
-// =======================
+
+// ==========================================
+// DATABASE TEST
+// ==========================================
+
 app.get("/db-test", async (req, res) => {
 
     try {
 
-        const result = await db.query("SELECT NOW()");
+        const result = await db.query(
+            "SELECT NOW()"
+        );
 
         res.json({
+
             success: true,
-            serverTime: result.rows[0].now
+
+            serverTime:
+                result.rows[0].now
+
         });
 
     } catch (err) {
+
+        console.error(
+            "Database Test Error:",
+            err
+        );
 
         res.status(500).json({
+
             success: false,
+
             message: err.message
+
         });
 
     }
 
 });
 
-// =======================
-// Dashboard
-// =======================
-app.get("/dashboard", isLoggedIn, async (req, res) => {
 
-    try {
+// ==========================================
+// DASHBOARD
+// ==========================================
 
-        const totalJobs = await db.query(
-            "SELECT COUNT(*) FROM jobs"
-        );
+app.get(
+    "/dashboard",
+    isLoggedIn,
+    async (req, res) => {
 
-        const totalUsers = await db.query(
-            "SELECT COUNT(*) FROM users"
-        );
+        try {
 
-        const totalApplications = await db.query(
-            "SELECT COUNT(*) FROM applications"
-        );
+            // Total Jobs
+            const totalJobs =
+                await db.query(
+                    "SELECT COUNT(*) FROM jobs"
+                );
 
-        res.render("dashboard", {
 
-            user: req.session.user,
+            // Total Users
+            const totalUsers =
+                await db.query(
+                    "SELECT COUNT(*) FROM users"
+                );
 
-            totalJobs: totalJobs.rows[0].count,
 
-            totalUsers: totalUsers.rows[0].count,
+            // Total Applications
+            const totalApplications =
+                await db.query(
+                    "SELECT COUNT(*) FROM applications"
+                );
 
-            totalApplications: totalApplications.rows[0].count
 
-        });
+            // Render Dashboard
+            res.render(
+                "dashboard",
+                {
 
-    } catch (err) {
+                    user:
+                        req.session.user,
 
-        console.log(err);
+                    totalJobs:
+                        totalJobs.rows[0].count,
 
-        res.send(err.message);
+                    totalUsers:
+                        totalUsers.rows[0].count,
+
+                    totalApplications:
+                        totalApplications.rows[0].count
+
+                }
+            );
+
+        } catch (err) {
+
+            console.error(
+                "Dashboard Error:",
+                err
+            );
+
+            res.status(500).send(
+                "Unable to load dashboard."
+            );
+
+        }
 
     }
+);
+
+
+// ==========================================
+// AUTHENTICATION ROUTES
+// ==========================================
+
+app.use(
+    "/",
+    authRoutes
+);
+
+
+// ==========================================
+// JOB ROUTES
+// ==========================================
+
+app.use(
+    "/jobs",
+    jobRoutes
+);
+
+
+// ==========================================
+// APPLICATION ROUTES
+// ==========================================
+
+app.use(
+    "/",
+    applicationRoutes
+);
+
+
+// ==========================================
+// 404 PAGE
+// ==========================================
+
+app.use((req, res) => {
+
+    res.status(404).send(`
+
+        <div style="
+            font-family: Arial;
+            text-align: center;
+            margin-top: 100px;
+        ">
+
+            <h1>404</h1>
+
+            <h2>Page Not Found</h2>
+
+            <p>
+                The page you are looking for
+                does not exist.
+            </p>
+
+            <a href="/">
+                Go Home
+            </a>
+
+        </div>
+
+    `);
 
 });
 
-// =======================
-// Routes
-// =======================
-app.use("/", authRoutes);
 
-app.use("/jobs", jobRoutes);
+// ==========================================
+// SERVER
+// ==========================================
 
-app.use("/", applicationRoutes);
+const PORT =
+    process.env.PORT || 3000;
 
-// =======================
-// Server
-// =======================
-const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(
+    PORT,
+    () => {
 
-    console.log(`✅ Server Running on http://localhost:${PORT}`);
+        console.log(
+            `✅ Server Running on http://localhost:${PORT}`
+        );
 
-});
+    }
+);

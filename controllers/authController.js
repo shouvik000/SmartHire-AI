@@ -96,3 +96,31 @@ exports.login = async (req, res) => {
         res.send(err.message);
     }
 };
+
+// ==========================================
+// LOGOUT
+// ==========================================
+
+exports.logout = (req, res) => {
+
+    req.session.destroy((err) => {
+
+        if (err) {
+
+            console.error("Logout Error:", err);
+
+            return res.status(500).send(
+                "Unable to logout."
+            );
+
+        }
+
+        // Remove session cookie
+        res.clearCookie("connect.sid");
+
+        // Redirect to login page
+        res.redirect("/login");
+
+    });
+
+};

@@ -12,4 +12,7 @@ router.post("/register", authController.register);
 router.get("/login", authController.showLogin);
 router.post("/login", authController.login);
 
+// Logout
+router.get("/logout", authController.logout);
+
 module.exports = router;
