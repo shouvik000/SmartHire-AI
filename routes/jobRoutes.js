@@ -4,14 +4,93 @@ const router = express.Router();
 const jobController = require("../controllers/jobController");
 const { isLoggedIn } = require("../middleware/authMiddleware");
 
-router.get("/", isLoggedIn, jobController.getJobs);
 
-router.get("/add", isLoggedIn, jobController.showAddJob);
-router.post("/add", isLoggedIn, jobController.addJob);
+// ==========================================
+// VIEW ALL JOBS
+// GET /jobs
+// ==========================================
 
-router.get("/edit/:id", isLoggedIn, jobController.showEditJob);
-router.post("/edit/:id", isLoggedIn, jobController.updateJob);
+router.get(
+    "/",
+    isLoggedIn,
+    jobController.getJobs
+);
 
-router.get("/delete/:id", isLoggedIn, jobController.deleteJob);
+
+// ==========================================
+// SHOW ADD JOB FORM
+// GET /jobs/add
+// ==========================================
+
+router.get(
+    "/add",
+    isLoggedIn,
+    jobController.showAddJob
+);
+
+
+// ==========================================
+// ADD NEW JOB
+// POST /jobs/add
+// ==========================================
+
+router.post(
+    "/add",
+    isLoggedIn,
+    jobController.addJob
+);
+
+
+// ==========================================
+// SHOW EDIT JOB FORM
+// GET /jobs/edit/:id
+// ==========================================
+
+router.get(
+    "/edit/:id",
+    isLoggedIn,
+    jobController.showEditJob
+);
+
+
+// ==========================================
+// UPDATE JOB
+// POST /jobs/edit/:id
+// ==========================================
+
+router.post(
+    "/edit/:id",
+    isLoggedIn,
+    jobController.updateJob
+);
+
+
+// ==========================================
+// DELETE JOB
+// POST /jobs/delete/:id
+// ==========================================
+
+router.post(
+    "/delete/:id",
+    isLoggedIn,
+    jobController.deleteJob
+);
+
+
+// ==========================================
+// VIEW SINGLE JOB
+// GET /jobs/:id
+// ==========================================
+
+router.get(
+    "/:id",
+    isLoggedIn,
+    jobController.getJobById
+);
+
+
+// ==========================================
+// EXPORT ROUTER
+// ==========================================
 
 module.exports = router;

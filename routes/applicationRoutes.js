@@ -1,13 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
+const path = require("path");
 
-const applicationController =
-    require("../controllers/applicationController");
-
-const { isLoggedIn } =
-    require("../middleware/authMiddleware");
-
+const applicationController = require("../controllers/applicationController");
+const { isLoggedIn } = require("../middleware/authMiddleware");
 
 // ======================================================
 // MULTER - RESUME UPLOAD CONFIGURATION
@@ -16,24 +13,28 @@ const { isLoggedIn } =
 const storage = multer.diskStorage({
 
     destination: function (req, file, cb) {
-
         cb(null, "uploads/");
-
     },
 
     filename: function (req, file, cb) {
 
+        const extension = path.extname(file.originalname);
+
         const uniqueName =
             Date.now() +
             "-" +
-            file.originalname.replace(/\s+/g, "-");
+            Math.round(Math.random() * 1E9) +
+            extension;
 
         cb(null, uniqueName);
-
     }
 
 });
 
+
+// ======================================================
+// MULTER CONFIGURATION
+// ======================================================
 
 const upload = multer({
 
@@ -46,15 +47,10 @@ const upload = multer({
     fileFilter: function (req, file, cb) {
 
         const allowedTypes = [
-
             "application/pdf",
-
             "application/msword",
-
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-
         ];
-
 
         if (allowedTypes.includes(file.mimetype)) {
 
@@ -76,7 +72,7 @@ const upload = multer({
 
 
 // ======================================================
-// APPLY FOR A JOB - SHOW FORM
+// APPLY FOR JOB - SHOW FORM
 // GET /apply/:id
 // ======================================================
 
@@ -88,7 +84,7 @@ router.get(
 
 
 // ======================================================
-// APPLY FOR A JOB - SUBMIT FORM
+// APPLY FOR JOB - SUBMIT
 // POST /apply/:id
 // ======================================================
 
@@ -101,7 +97,7 @@ router.post(
 
 
 // ======================================================
-// VIEW ALL APPLICATIONS
+// VIEW MY RECEIVED APPLICATIONS
 // GET /applications
 // ======================================================
 
@@ -113,7 +109,7 @@ router.get(
 
 
 // ======================================================
-// VIEW ONE APPLICATION
+// VIEW SINGLE APPLICATION
 // GET /applications/:id
 // ======================================================
 

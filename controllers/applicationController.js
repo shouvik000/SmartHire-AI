@@ -4,6 +4,27 @@ const path = require("path");
 const { PDFParse } = require("pdf-parse");
 const mammoth = require("mammoth");
 
+
+// =====================================================
+// UPLOAD DIRECTORY
+// =====================================================
+
+const uploadDir = path.join(
+    __dirname,
+    "..",
+    "uploads"
+);
+
+// Make sure uploads directory exists
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, {
+        recursive: true
+    });
+
+    console.log("✅ uploads directory created");
+}
+
+
 // =====================================================
 // EXTRACT TEXT FROM RESUME
 // =====================================================
@@ -15,9 +36,7 @@ async function extractResumeText(file) {
     }
 
     const filePath = path.join(
-        __dirname,
-        "..",
-        "uploads",
+        uploadDir,
         file.filename
     );
 
@@ -25,13 +44,22 @@ async function extractResumeText(file) {
         .extname(file.originalname)
         .toLowerCase();
 
-    // -------------------------
+    // -------------------------------------------------
     // PDF
-    // -------------------------
+    // -------------------------------------------------
 
     if (extension === ".pdf") {
 
         try {
+
+            if (!fs.existsSync(filePath)) {
+                console.error(
+                    "Resume file not found:",
+                    filePath
+                );
+
+                return "";
+            }
 
             const data = fs.readFileSync(filePath);
 
@@ -39,7 +67,8 @@ async function extractResumeText(file) {
                 data: data
             });
 
-            const result = await parser.getText();
+            const result =
+                await parser.getText();
 
             await parser.destroy();
 
@@ -53,17 +82,26 @@ async function extractResumeText(file) {
             );
 
             return "";
-
         }
     }
 
-    // -------------------------
+
+    // -------------------------------------------------
     // DOCX
-    // -------------------------
+    // -------------------------------------------------
 
     if (extension === ".docx") {
 
         try {
+
+            if (!fs.existsSync(filePath)) {
+                console.error(
+                    "Resume file not found:",
+                    filePath
+                );
+
+                return "";
+            }
 
             const result =
                 await mammoth.extractRawText({
@@ -80,13 +118,27 @@ async function extractResumeText(file) {
             );
 
             return "";
-
         }
     }
 
-    // -------------------------
+
+    // -------------------------------------------------
+    // DOC
+    // -------------------------------------------------
+
+    if (extension === ".doc") {
+
+        console.log(
+            "DOC format uploaded. Text extraction is not supported."
+        );
+
+        return "";
+    }
+
+
+    // -------------------------------------------------
     // TXT
-    // -------------------------
+    // -------------------------------------------------
 
     if (extension === ".txt") {
 
@@ -105,9 +157,9 @@ async function extractResumeText(file) {
             );
 
             return "";
-
         }
     }
+
 
     return "";
 }
@@ -119,7 +171,7 @@ async function extractResumeText(file) {
 
 function normalizeSkill(skill) {
 
-    return skill
+    return String(skill)
         .toLowerCase()
         .trim()
         .replace(/\s+/g, " ");
@@ -143,16 +195,21 @@ function calculateMatchScore(
             matchedSkills: [],
             missingSkills: []
         };
-
     }
 
-    const resume =
-        resumeText.toLowerCase();
 
-    const required = requiredSkills
-        .split(",")
-        .map(skill => normalizeSkill(skill))
-        .filter(Boolean);
+    const resume =
+        String(resumeText).toLowerCase();
+
+
+    const required =
+        String(requiredSkills)
+            .split(",")
+            .map(skill =>
+                normalizeSkill(skill)
+            )
+            .filter(Boolean);
+
 
     if (required.length === 0) {
 
@@ -161,11 +218,12 @@ function calculateMatchScore(
             matchedSkills: [],
             missingSkills: []
         };
-
     }
+
 
     const matchedSkills = [];
     const missingSkills = [];
+
 
     required.forEach(skill => {
 
@@ -176,10 +234,10 @@ function calculateMatchScore(
         } else {
 
             missingSkills.push(skill);
-
         }
 
     });
+
 
     const score = Math.round(
         (
@@ -188,16 +246,12 @@ function calculateMatchScore(
         ) * 100
     );
 
+
     return {
-
         score,
-
         matchedSkills,
-
         missingSkills
-
     };
-
 }
 
 
@@ -209,23 +263,35 @@ exports.showApplyForm = async (req, res) => {
 
     try {
 
+        const jobId =
+            Number(req.params.id);
+
+
+        if (!Number.isInteger(jobId)) {
+
+            return res.status(400).send(
+                "Invalid Job ID."
+            );
+        }
+
+
         const result = await db.query(
 
             `SELECT *
              FROM jobs
-             WHERE id=$1`,
+             WHERE id = $1`,
 
-            [req.params.id]
-
+            [jobId]
         );
+
 
         if (result.rows.length === 0) {
 
             return res.status(404).send(
                 "Job Not Found"
             );
-
         }
+
 
         res.render(
             "applications/apply",
@@ -234,6 +300,7 @@ exports.showApplyForm = async (req, res) => {
             }
         );
 
+
     } catch (err) {
 
         console.error(
@@ -241,10 +308,10 @@ exports.showApplyForm = async (req, res) => {
             err
         );
 
+
         res.status(500).send(
             "Unable to open application form."
         );
-
     }
 
 };
@@ -258,17 +325,41 @@ exports.applyJob = async (req, res) => {
 
     try {
 
+        console.log(
+            "========================================"
+        );
+
+        console.log(
+            "APPLICATION SUBMISSION STARTED"
+        );
+
+        console.log(
+            "Job ID:",
+            req.params.id
+        );
+
+        console.log(
+            "Uploaded File:",
+            req.file
+                ? req.file.filename
+                : "NO FILE"
+        );
+
+
         const {
+
             applicant_name,
             email,
             phone,
             skills,
             cover_letter
+
         } = req.body;
 
-        // -------------------------
-        // Validation
-        // -------------------------
+
+        // -------------------------------------------------
+        // VALIDATE USER INPUT
+        // -------------------------------------------------
 
         if (
             !applicant_name ||
@@ -279,36 +370,57 @@ exports.applyJob = async (req, res) => {
             return res.status(400).send(
                 "Please fill all required fields."
             );
-
         }
 
-        // -------------------------
-        // Get Job
-        // -------------------------
 
-        const jobResult = await db.query(
+        const jobId =
+            Number(req.params.id);
 
-            `SELECT *
-             FROM jobs
-             WHERE id=$1`,
 
-            [req.params.id]
+        if (!Number.isInteger(jobId)) {
 
-        );
+            return res.status(400).send(
+                "Invalid Job ID."
+            );
+        }
+
+
+        // -------------------------------------------------
+        // GET JOB
+        // -------------------------------------------------
+
+        const jobResult =
+            await db.query(
+
+                `SELECT *
+                 FROM jobs
+                 WHERE id = $1`,
+
+                [jobId]
+            );
+
 
         if (jobResult.rows.length === 0) {
 
             return res.status(404).send(
                 "Job Not Found"
             );
-
         }
 
-        const job = jobResult.rows[0];
 
-        // -------------------------
-        // Resume Required
-        // -------------------------
+        const job =
+            jobResult.rows[0];
+
+
+        console.log(
+            "Job Found:",
+            job.title
+        );
+
+
+        // -------------------------------------------------
+        // CHECK RESUME
+        // -------------------------------------------------
 
         if (!req.file) {
 
@@ -327,37 +439,75 @@ exports.applyJob = async (req, res) => {
                         before submitting the application.
                     </p>
 
-                    <a href="/apply/${req.params.id}">
+                    <a href="/apply/${jobId}">
                         Go Back
                     </a>
 
                 </div>
 
             `);
-
         }
 
-        // -------------------------
-        // Extract Resume
-        // -------------------------
+
+        // -------------------------------------------------
+        // CHECK FILE EXISTS
+        // -------------------------------------------------
+
+        const resumePath =
+            path.join(
+                uploadDir,
+                req.file.filename
+            );
+
+
+        if (!fs.existsSync(resumePath)) {
+
+            console.error(
+                "Uploaded resume does not exist:",
+                resumePath
+            );
+
+            return res.status(500).send(
+                "Resume upload failed. Please try again."
+            );
+        }
+
+
+        console.log(
+            "Resume saved:",
+            resumePath
+        );
+
+
+        // -------------------------------------------------
+        // EXTRACT RESUME TEXT
+        // -------------------------------------------------
 
         const resumeText =
-            await extractResumeText(req.file);
+            await extractResumeText(
+                req.file
+            );
+
 
         console.log(
             "Resume Text Length:",
             resumeText.length
         );
 
-        // -------------------------
-        // Calculate Match
-        // -------------------------
+
+        // -------------------------------------------------
+        // CALCULATE MATCH SCORE
+        // -------------------------------------------------
 
         const matchResult =
             calculateMatchScore(
+
                 resumeText,
+
                 job.required_skills
+
             );
+
 
         console.log(
             "Required Skills:",
@@ -379,47 +529,67 @@ exports.applyJob = async (req, res) => {
             matchResult.score + "%"
         );
 
-        // -------------------------
-        // Save Application
-        // -------------------------
 
-        await db.query(
+        // -------------------------------------------------
+        // SAVE APPLICATION
+        // -------------------------------------------------
 
-            `INSERT INTO applications
-            (
-                job_id,
-                applicant_name,
-                email,
-                phone,
-                skills,
-                cover_letter,
-                resume_link,
-                match_score,
-                status
-            )
+        const applicationResult =
+            await db.query(
 
-            VALUES
-            ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+                `INSERT INTO applications
+                (
+                    job_id,
+                    applicant_name,
+                    email,
+                    phone,
+                    skills,
+                    cover_letter,
+                    resume_link,
+                    match_score,
+                    status
+                )
 
-            [
-                req.params.id,
-                applicant_name,
-                email,
-                phone,
-                skills || "",
-                cover_letter || "",
-                req.file.filename,
-                matchResult.score,
-                "Applied"
-            ]
+                VALUES
+                ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 
+                RETURNING id`,
+
+                [
+
+                    jobId,
+
+                    applicant_name,
+
+                    email,
+
+                    phone,
+
+                    skills || "",
+
+                    cover_letter || "",
+
+                    req.file.filename,
+
+                    matchResult.score,
+
+                    "Applied"
+
+                ]
+            );
+
+
+        console.log(
+            "Application saved successfully:",
+            applicationResult.rows[0]
         );
 
-        // -------------------------
-        // Success Page
-        // -------------------------
 
-        res.render(
+        // -------------------------------------------------
+        // SUCCESS PAGE
+        // -------------------------------------------------
+
+        return res.render(
 
             "applications/success",
 
@@ -441,42 +611,65 @@ exports.applyJob = async (req, res) => {
                     matchResult.missingSkills
 
             }
-
         );
+
 
     } catch (err) {
 
         console.error(
-            "APPLICATION ERROR:",
+            "========================================"
+        );
+
+        console.error(
+            "APPLICATION ERROR"
+        );
+
+        console.error(
             err
         );
 
-        res.status(500).send(`
+        console.error(
+            "========================================"
+        );
+
+
+        return res.status(500).send(`
 
             <div style="
                 font-family: Arial;
+                max-width: 700px;
+                margin: 80px auto;
+                padding: 30px;
                 text-align: center;
-                margin-top: 80px;
             ">
 
-                <h2>
+                <h2 style="color:#dc3545;">
                     Application Submission Failed
                 </h2>
 
                 <p>
-                    ${err.message}
+                    Something went wrong while
+                    submitting your application.
                 </p>
 
-                <br>
-
-                <a href="/jobs">
-                    Back to Jobs
+                <a
+                    href="/apply/${req.params.id}"
+                    style="
+                        display:inline-block;
+                        margin-top:20px;
+                        padding:10px 20px;
+                        background:#0d6efd;
+                        color:white;
+                        text-decoration:none;
+                        border-radius:6px;
+                    "
+                >
+                    Try Again
                 </a>
 
             </div>
 
         `);
-
     }
 
 };
@@ -491,29 +684,20 @@ exports.viewApplications = async (req, res) => {
 
     try {
 
-        // Make sure user is logged in
-
         if (!req.session.user) {
 
             return res.redirect("/login");
-
         }
+
 
         const userId =
             req.session.user.id;
 
-        console.log(
-            "Viewing applications for user:",
-            userId
-        );
-
-        // IMPORTANT:
-        // Only show applications submitted
-        // to jobs created by this user.
 
         const result = await db.query(
 
             `SELECT
+
                 applications.id,
                 applications.job_id,
                 applications.applicant_name,
@@ -530,33 +714,26 @@ exports.viewApplications = async (req, res) => {
                 jobs.company,
                 jobs.location
 
-            FROM applications
+             FROM applications
 
-            INNER JOIN jobs
+             INNER JOIN jobs
                 ON jobs.id = applications.job_id
 
-            WHERE jobs.created_by = $1
+             WHERE jobs.created_by = $1
 
-            ORDER BY applications.id DESC`,
+             ORDER BY applications.id DESC`,
 
             [userId]
-
         );
 
-        console.log(
-            "Applications found:",
-            result.rows.length
-        );
 
         res.render(
-
             "applications/applications",
-
             {
                 applications: result.rows
             }
-
         );
+
 
     } catch (err) {
 
@@ -565,10 +742,10 @@ exports.viewApplications = async (req, res) => {
             err
         );
 
+
         res.status(500).send(
             "Unable to load applications."
         );
-
     }
 
 };
@@ -585,18 +762,29 @@ exports.viewApplication = async (req, res) => {
         if (!req.session.user) {
 
             return res.redirect("/login");
-
         }
+
 
         const userId =
             req.session.user.id;
 
+
         const applicationId =
-            req.params.id;
+            Number(req.params.id);
+
+
+        if (!Number.isInteger(applicationId)) {
+
+            return res.status(400).send(
+                "Invalid Application ID."
+            );
+        }
+
 
         const result = await db.query(
 
             `SELECT
+
                 applications.*,
 
                 jobs.title AS job_title,
@@ -604,39 +792,36 @@ exports.viewApplication = async (req, res) => {
                 jobs.location,
                 jobs.required_skills
 
-            FROM applications
+             FROM applications
 
-            INNER JOIN jobs
+             INNER JOIN jobs
                 ON jobs.id = applications.job_id
 
-            WHERE applications.id = $1
-            AND jobs.created_by = $2`,
+             WHERE applications.id = $1
+             AND jobs.created_by = $2`,
 
             [
                 applicationId,
                 userId
             ]
-
         );
+
 
         if (result.rows.length === 0) {
 
             return res.status(404).send(
                 "Application not found."
             );
-
         }
 
+
         res.render(
-
             "applications/viewApplication",
-
             {
-                application:
-                    result.rows[0]
+                application: result.rows[0]
             }
-
         );
+
 
     } catch (err) {
 
@@ -645,10 +830,10 @@ exports.viewApplication = async (req, res) => {
             err
         );
 
+
         res.status(500).send(
             "Unable to load application."
         );
-
     }
 
 };
@@ -665,17 +850,24 @@ exports.acceptApplication = async (req, res) => {
         if (!req.session.user) {
 
             return res.redirect("/login");
-
         }
+
 
         const userId =
             req.session.user.id;
 
-        const applicationId =
-            req.params.id;
 
-        // Only allow employer to accept
-        // applications for their own jobs.
+        const applicationId =
+            Number(req.params.id);
+
+
+        if (!Number.isInteger(applicationId)) {
+
+            return res.status(400).send(
+                "Invalid Application ID."
+            );
+        }
+
 
         const result = await db.query(
 
@@ -686,9 +878,11 @@ exports.acceptApplication = async (req, res) => {
              WHERE id = $1
 
              AND job_id IN (
+
                  SELECT id
                  FROM jobs
                  WHERE created_by = $2
+
              )
 
              RETURNING *`,
@@ -697,22 +891,24 @@ exports.acceptApplication = async (req, res) => {
                 applicationId,
                 userId
             ]
-
         );
+
 
         if (result.rows.length === 0) {
 
             return res.status(404).send(
                 "Application not found or you do not have permission."
             );
-
         }
+
 
         console.log(
             `Application ${applicationId} accepted by user ${userId}`
         );
 
+
         res.redirect("/applications");
+
 
     } catch (err) {
 
@@ -721,10 +917,10 @@ exports.acceptApplication = async (req, res) => {
             err
         );
 
+
         res.status(500).send(
             "Unable to accept application."
         );
-
     }
 
 };
@@ -741,53 +937,65 @@ exports.deleteApplication = async (req, res) => {
         if (!req.session.user) {
 
             return res.redirect("/login");
-
         }
+
 
         const userId =
             req.session.user.id;
 
+
         const applicationId =
-            req.params.id;
+            Number(req.params.id);
 
-        // First find the resume belonging to
-        // this employer's application.
 
-        const applicationResult = await db.query(
+        if (!Number.isInteger(applicationId)) {
 
-            `SELECT
-                applications.resume_link
+            return res.status(400).send(
+                "Invalid Application ID."
+            );
+        }
 
-             FROM applications
 
-             INNER JOIN jobs
-                 ON jobs.id = applications.job_id
+        // -------------------------------------------------
+        // GET RESUME FILE
+        // -------------------------------------------------
 
-             WHERE applications.id = $1
+        const applicationResult =
+            await db.query(
 
-             AND jobs.created_by = $2`,
+                `SELECT
+                    applications.resume_link
 
-            [
-                applicationId,
-                userId
-            ]
+                 FROM applications
 
-        );
+                 INNER JOIN jobs
+                    ON jobs.id = applications.job_id
+
+                 WHERE applications.id = $1
+                 AND jobs.created_by = $2`,
+
+                [
+                    applicationId,
+                    userId
+                ]
+            );
+
 
         if (applicationResult.rows.length === 0) {
 
             return res.status(404).send(
                 "Application not found or you do not have permission."
             );
-
         }
+
 
         const resumeLink =
             applicationResult.rows[0].resume_link;
 
-        // -------------------------
-        // Delete Application
-        // -------------------------
+
+        // -------------------------------------------------
+        // DELETE APPLICATION
+        // -------------------------------------------------
 
         await db.query(
 
@@ -796,36 +1004,40 @@ exports.deleteApplication = async (req, res) => {
              WHERE id = $1
 
              AND job_id IN (
+
                  SELECT id
                  FROM jobs
                  WHERE created_by = $2
+
              )`,
 
             [
                 applicationId,
                 userId
             ]
-
         );
 
-        // -------------------------
-        // Delete Resume File
-        // -------------------------
+
+        // -------------------------------------------------
+        // DELETE RESUME
+        // -------------------------------------------------
 
         if (resumeLink) {
 
-            const resumePath = path.join(
-                __dirname,
-                "..",
-                "uploads",
-                resumeLink
-            );
+            const resumePath =
+                path.join(
+                    uploadDir,
+                    resumeLink
+                );
+
 
             if (fs.existsSync(resumePath)) {
 
                 try {
 
-                    fs.unlinkSync(resumePath);
+                    fs.unlinkSync(
+                        resumePath
+                    );
 
                     console.log(
                         "Resume deleted:",
@@ -838,18 +1050,18 @@ exports.deleteApplication = async (req, res) => {
                         "Resume File Delete Error:",
                         fileError
                     );
-
                 }
-
             }
-
         }
+
 
         console.log(
             `Application ${applicationId} deleted by user ${userId}`
         );
 
+
         res.redirect("/applications");
+
 
     } catch (err) {
 
@@ -858,10 +1070,10 @@ exports.deleteApplication = async (req, res) => {
             err
         );
 
+
         res.status(500).send(
             "Unable to delete application."
         );
-
     }
 
 };
