@@ -20,11 +20,11 @@ const app = express();
 
 db.query("SELECT NOW()")
     .then(() => {
-        console.log("✅ PostgreSQL Connected");
+        console.log(" PostgreSQL Connected");
     })
     .catch((err) => {
         console.error(
-            "❌ Database Error:",
+            " Database Error:",
             err.message
         );
     });
@@ -290,7 +290,7 @@ app.listen(
     () => {
 
         console.log(
-            `✅ Server Running on http://localhost:${PORT}`
+            ` Server Running on http://localhost:${PORT}`
         );
 
     }
