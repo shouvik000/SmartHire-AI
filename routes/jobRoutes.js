@@ -5,10 +5,10 @@ const jobController = require("../controllers/jobController");
 const { isLoggedIn } = require("../middleware/authMiddleware");
 
 
-// ==========================================
+
 // VIEW ALL JOBS
 // GET /jobs
-// ==========================================
+
 
 router.get(
     "/",
@@ -17,10 +17,10 @@ router.get(
 );
 
 
-// ==========================================
+
 // SHOW ADD JOB FORM
 // GET /jobs/add
-// ==========================================
+
 
 router.get(
     "/add",
@@ -29,10 +29,10 @@ router.get(
 );
 
 
-// ==========================================
+
 // ADD NEW JOB
 // POST /jobs/add
-// ==========================================
+
 
 router.post(
     "/add",
@@ -41,10 +41,10 @@ router.post(
 );
 
 
-// ==========================================
+
 // SHOW EDIT JOB FORM
 // GET /jobs/edit/:id
-// ==========================================
+
 
 router.get(
     "/edit/:id",
@@ -53,10 +53,10 @@ router.get(
 );
 
 
-// ==========================================
+
 // UPDATE JOB
 // POST /jobs/edit/:id
-// ==========================================
+
 
 router.post(
     "/edit/:id",
@@ -65,10 +65,10 @@ router.post(
 );
 
 
-// ==========================================
+
 // DELETE JOB
 // POST /jobs/delete/:id
-// ==========================================
+
 
 router.post(
     "/delete/:id",
@@ -77,10 +77,10 @@ router.post(
 );
 
 
-// ==========================================
+
 // VIEW SINGLE JOB
 // GET /jobs/:id
-// ==========================================
+
 
 router.get(
     "/:id",
@@ -89,8 +89,8 @@ router.get(
 );
 
 
-// ==========================================
+
 // EXPORT ROUTER
-// ==========================================
+
 
 module.exports = router;

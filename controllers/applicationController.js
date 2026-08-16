@@ -993,9 +993,9 @@ exports.deleteApplication = async (req, res) => {
             applicationResult.rows[0].resume_link;
 
 
-        // -------------------------------------------------
+        
         // DELETE APPLICATION
-        // -------------------------------------------------
+        
 
         await db.query(
 

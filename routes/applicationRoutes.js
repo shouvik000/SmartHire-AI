@@ -32,9 +32,9 @@ const storage = multer.diskStorage({
 });
 
 
-// ======================================================
+
 // MULTER CONFIGURATION
-// ======================================================
+
 
 const upload = multer({
 
@@ -71,10 +71,10 @@ const upload = multer({
 });
 
 
-// ======================================================
+
 // APPLY FOR JOB - SHOW FORM
 // GET /apply/:id
-// ======================================================
+
 
 router.get(
     "/apply/:id",
@@ -83,10 +83,10 @@ router.get(
 );
 
 
-// ======================================================
+
 // APPLY FOR JOB - SUBMIT
 // POST /apply/:id
-// ======================================================
+
 
 router.post(
     "/apply/:id",
@@ -96,10 +96,10 @@ router.post(
 );
 
 
-// ======================================================
+
 // VIEW MY RECEIVED APPLICATIONS
 // GET /applications
-// ======================================================
+
 
 router.get(
     "/applications",
@@ -108,10 +108,10 @@ router.get(
 );
 
 
-// ======================================================
+
 // VIEW SINGLE APPLICATION
 // GET /applications/:id
-// ======================================================
+
 
 router.get(
     "/applications/:id",
@@ -120,10 +120,10 @@ router.get(
 );
 
 
-// ======================================================
+
 // ACCEPT APPLICATION
 // POST /applications/:id/accept
-// ======================================================
+
 
 router.post(
     "/applications/:id/accept",
@@ -132,10 +132,10 @@ router.post(
 );
 
 
-// ======================================================
+
 // DELETE APPLICATION
 // POST /applications/:id/delete
-// ======================================================
+
 
 router.post(
     "/applications/:id/delete",
@@ -144,8 +144,8 @@ router.post(
 );
 
 
-// ======================================================
+
 // EXPORT ROUTER
-// ======================================================
+
 
 module.exports = router;

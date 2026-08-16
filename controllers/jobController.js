@@ -1,10 +1,10 @@
 const db = require("../config/db");
 
 
-// ======================================================
+
 // SHOW ADD JOB PAGE
 // GET /jobs/add
-// ======================================================
+
 
 exports.showAddJob = (req, res) => {
 
@@ -15,10 +15,10 @@ exports.showAddJob = (req, res) => {
 };
 
 
-// ======================================================
+
 // ADD JOB
 // POST /jobs/add
-// ======================================================
+
 
 exports.addJob = async (req, res) => {
 
@@ -94,10 +94,9 @@ exports.addJob = async (req, res) => {
 };
 
 
-// ======================================================
+
 // VIEW ALL JOBS
 // GET /jobs
-// ======================================================
 
 exports.getJobs = async (req, res) => {
 
@@ -111,16 +110,7 @@ exports.getJobs = async (req, res) => {
         const searchTerm = `%${search.toLowerCase()}%`;
 
 
-        /*
-         * IMPORTANT:
-         *
-         * The second argument [searchTerm]
-         * MUST be passed to db.query().
-         *
-         * Otherwise PostgreSQL gives:
-         *
-         * ERROR: there is no parameter $1
-         */
+       
 
 
         const result = await db.query(
@@ -172,10 +162,9 @@ exports.getJobs = async (req, res) => {
 };
 
 
-// ======================================================
+
 // SHOW EDIT JOB PAGE
 // GET /jobs/edit/:id
-// ======================================================
 
 exports.showEditJob = async (req, res) => {
 
@@ -238,10 +227,10 @@ exports.showEditJob = async (req, res) => {
 };
 
 
-// ======================================================
+
 // UPDATE JOB
 // POST /jobs/edit/:id
-// ======================================================
+
 
 exports.updateJob = async (req, res) => {
 
@@ -351,10 +340,10 @@ exports.updateJob = async (req, res) => {
 };
 
 
-// ======================================================
+
 // DELETE JOB
 // POST /jobs/delete/:id
-// ======================================================
+
 
 exports.deleteJob = async (req, res) => {
 
@@ -365,10 +354,7 @@ exports.deleteJob = async (req, res) => {
         }
 
 
-        /*
-         * Delete only jobs created
-         * by the currently logged-in user.
-         */
+      
 
         const result = await db.query(
 
@@ -415,10 +401,10 @@ exports.deleteJob = async (req, res) => {
 };
 
 
-// ======================================================
+
 // VIEW SINGLE JOB
 // GET /jobs/:id
-// ======================================================
+
 
 exports.getJobById = async (req, res) => {
 
