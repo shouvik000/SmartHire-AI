@@ -267,10 +267,9 @@ exports.updateJob = async (req, res) => {
         }
 
 
-        /*
-         * Update only the job belonging
-         * to the logged-in user.
-         */
+       
+          //Update only the job belonging to the logged-in user
+        
 
         const result = await db.query(
 

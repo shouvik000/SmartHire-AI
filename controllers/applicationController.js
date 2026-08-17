@@ -5,9 +5,9 @@ const { PDFParse } = require("pdf-parse");
 const mammoth = require("mammoth");
 
 
-// =====================================================
+
 // UPLOAD DIRECTORY
-// =====================================================
+
 
 const uploadDir = path.join(
     __dirname,
@@ -25,9 +25,9 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 
-// =====================================================
+
 // EXTRACT TEXT FROM RESUME
-// =====================================================
+
 
 async function extractResumeText(file) {
 
@@ -44,9 +44,9 @@ async function extractResumeText(file) {
         .extname(file.originalname)
         .toLowerCase();
 
-    // -------------------------------------------------
+    
     // PDF
-    // -------------------------------------------------
+    
 
     if (extension === ".pdf") {
 
@@ -86,9 +86,9 @@ async function extractResumeText(file) {
     }
 
 
-    // -------------------------------------------------
+    
     // DOCX
-    // -------------------------------------------------
+    
 
     if (extension === ".docx") {
 
@@ -122,9 +122,9 @@ async function extractResumeText(file) {
     }
 
 
-    // -------------------------------------------------
+    
     // DOC
-    // -------------------------------------------------
+   
 
     if (extension === ".doc") {
 
@@ -136,9 +136,9 @@ async function extractResumeText(file) {
     }
 
 
-    // -------------------------------------------------
+    
     // TXT
-    // -------------------------------------------------
+    
 
     if (extension === ".txt") {
 
@@ -165,9 +165,8 @@ async function extractResumeText(file) {
 }
 
 
-// =====================================================
 // NORMALIZE SKILL
-// =====================================================
+
 
 function normalizeSkill(skill) {
 
@@ -179,9 +178,9 @@ function normalizeSkill(skill) {
 }
 
 
-// =====================================================
+
 // CALCULATE RESUME MATCH SCORE
-// =====================================================
+
 
 function calculateMatchScore(
     resumeText,
@@ -255,9 +254,9 @@ function calculateMatchScore(
 }
 
 
-// =====================================================
+
 // SHOW APPLY FORM
-// =====================================================
+
 
 exports.showApplyForm = async (req, res) => {
 
@@ -317,9 +316,9 @@ exports.showApplyForm = async (req, res) => {
 };
 
 
-// =====================================================
+
 // SUBMIT APPLICATION
-// =====================================================
+
 
 exports.applyJob = async (req, res) => {
 
@@ -357,9 +356,9 @@ exports.applyJob = async (req, res) => {
         } = req.body;
 
 
-        // -------------------------------------------------
+        
         // VALIDATE USER INPUT
-        // -------------------------------------------------
+        
 
         if (
             !applicant_name ||
@@ -385,9 +384,9 @@ exports.applyJob = async (req, res) => {
         }
 
 
-        // -------------------------------------------------
+        
         // GET JOB
-        // -------------------------------------------------
+       
 
         const jobResult =
             await db.query(
@@ -418,9 +417,9 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        // -------------------------------------------------
+        
         // CHECK RESUME
-        // -------------------------------------------------
+        
 
         if (!req.file) {
 
@@ -449,9 +448,9 @@ exports.applyJob = async (req, res) => {
         }
 
 
-        // -------------------------------------------------
+        
         // CHECK FILE EXISTS
-        // -------------------------------------------------
+       
 
         const resumePath =
             path.join(
@@ -479,10 +478,9 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        // -------------------------------------------------
+        
         // EXTRACT RESUME TEXT
-        // -------------------------------------------------
-
+        
         const resumeText =
             await extractResumeText(
                 req.file
@@ -495,9 +493,9 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        // -------------------------------------------------
+        
         // CALCULATE MATCH SCORE
-        // -------------------------------------------------
+        
 
         const matchResult =
             calculateMatchScore(
@@ -530,9 +528,9 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        // -------------------------------------------------
+        
         // SAVE APPLICATION
-        // -------------------------------------------------
+        
 
         const applicationResult =
             await db.query(
@@ -585,10 +583,9 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        // -------------------------------------------------
+        
         // SUCCESS PAGE
-        // -------------------------------------------------
-
+       
         return res.render(
 
             "applications/success",
@@ -751,9 +748,9 @@ exports.viewApplications = async (req, res) => {
 };
 
 
-// =====================================================
+
 // VIEW SINGLE APPLICATION
-// =====================================================
+
 
 exports.viewApplication = async (req, res) => {
 
@@ -839,9 +836,9 @@ exports.viewApplication = async (req, res) => {
 };
 
 
-// =====================================================
+
 // ACCEPT APPLICATION
-// =====================================================
+
 
 exports.acceptApplication = async (req, res) => {
 
@@ -926,9 +923,9 @@ exports.acceptApplication = async (req, res) => {
 };
 
 
-// =====================================================
+
 // DELETE APPLICATION
-// =====================================================
+
 
 exports.deleteApplication = async (req, res) => {
 
@@ -956,9 +953,9 @@ exports.deleteApplication = async (req, res) => {
         }
 
 
-        // -------------------------------------------------
+        
         // GET RESUME FILE
-        // -------------------------------------------------
+       
 
         const applicationResult =
             await db.query(
@@ -1018,9 +1015,9 @@ exports.deleteApplication = async (req, res) => {
         );
 
 
-        // -------------------------------------------------
+       
         // DELETE RESUME
-        // -------------------------------------------------
+        
 
         if (resumeLink) {
 
