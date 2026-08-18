@@ -6,9 +6,9 @@ const path = require("path");
 const applicationController = require("../controllers/applicationController");
 const { isLoggedIn } = require("../middleware/authMiddleware");
 
-// ======================================================
+
 // MULTER - RESUME UPLOAD CONFIGURATION
-// ======================================================
+
 
 const storage = multer.diskStorage({
 
