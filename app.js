@@ -45,7 +45,7 @@ app.use(express.json());
 
 
 // SESSION
-// IMPORTANT: MUST COME BEFORE ROUTES
+
 
 
 app.use(
