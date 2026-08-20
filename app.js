@@ -23,29 +23,21 @@ db.query("SELECT NOW()")
         console.log(" PostgreSQL Connected");
     })
     .catch((err) => {
-        console.error(
-            " Database Error:",
-            err.message
-        );
+        console.error(" Database Error:", err.message);
     });
 
 
+// BODY PARSERS
 
-// MIDDLEWARE
 
-
-app.use(
-    express.urlencoded({
-        extended: true
-    })
-);
+app.use(express.urlencoded({
+    extended: true
+}));
 
 app.use(express.json());
 
 
-
 // SESSION
-
 
 
 app.use(
@@ -73,6 +65,7 @@ app.set(
 // STATIC FILES
 
 
+// CSS, JavaScript, images, etc.
 app.use(
     express.static(
         path.join(__dirname, "public")
@@ -83,6 +76,12 @@ app.use(
 
 // RESUME UPLOADS
 
+
+// Files inside:
+// SmartHire-AI/uploads/
+//
+// will be accessible as:
+// /uploads/filename.pdf
 
 app.use(
     "/uploads",
@@ -101,7 +100,6 @@ app.get("/", (req, res) => {
     res.render("index");
 
 });
-
 
 
 // DATABASE TEST
@@ -290,7 +288,7 @@ app.listen(
     () => {
 
         console.log(
-            ` Server Running on http://localhost:${PORT}`
+            `Server Running on port ${PORT}`
         );
 
     }
