@@ -278,17 +278,12 @@ app.use((req, res) => {
 // SERVER
 
 
-const PORT =
-    process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
+app.listen(PORT, () => {
 
-app.listen(
-    PORT,
-    () => {
+    console.log(
+        `🚀 SmartHire AI Server Running on port ${PORT}`
+    );
 
-        console.log(
-            `Server Running on port ${PORT}`
-        );
-
-    }
-);
+});
