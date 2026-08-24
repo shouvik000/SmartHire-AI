@@ -38,9 +38,7 @@ app.use(express.urlencoded({
 app.use(express.json());
 
 
-// SESSION
-
-
+// SESSION MANAGEMENT
 app.use(
     session({
         secret: process.env.SESSION_SECRET,
