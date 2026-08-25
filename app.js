@@ -283,7 +283,7 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
 
     console.log(
-        `🚀 SmartHire AI Server Running on port ${PORT}`
+        ` SmartHire AI Server Running on port ${PORT}`
     );
 
 });
