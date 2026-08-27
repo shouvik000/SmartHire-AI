@@ -444,11 +444,13 @@ SmartHire AI was developed as a full-stack backend-focused project to demonstrat
 
 ---
 
+
 ## 👨‍💻 Author
 
 **Shouvik Bagdi**
 Backend Developer | Node.js | Express.js | PostgreSQL
 
 **Tech Interests:** Node.js, Express.js, PostgreSQL, REST APIs, Backend Development, Database Design
+
 
 ---
