@@ -275,7 +275,10 @@ app.use((req, res) => {
 
 
 
-// SERVER
+//Server
+
+
+// Start the server on the specified PORT or default to 3000
 
 
 const PORT = process.env.PORT || 3000;
@@ -291,5 +294,6 @@ app.listen(PORT, () => {
 
 
 
-    
+
+
 });
