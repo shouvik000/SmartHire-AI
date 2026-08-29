@@ -1,64 +1,85 @@
+
 const express = require("express");
 const router = express.Router();
 
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2;
 
 const applicationController = require("../controllers/applicationController");
 const { isLoggedIn } = require("../middleware/authMiddleware");
 
+// ======================================================
+// CLOUDINARY CONFIGURATION
+// ======================================================
 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// RESUME UPLOAD DIRECTORY
+// ======================================================
+// CLOUDINARY CONNECTION TEST
+// ======================================================
 
-
-const uploadDir = path.join(__dirname, "..", "uploads");
-
-// Create uploads folder automatically if it doesn't exist
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, {
-        recursive: true
+cloudinary.api.ping()
+    .then(() => {
+        console.log("✅ Cloudinary Connected Successfully");
+    })
+    .catch((err) => {
+        console.error("❌ Cloudinary Connection Failed");
+        console.error(err.message);
     });
-}
 
+// ======================================================
+// CLOUDINARY STORAGE
+// Keeps the original file extension in the public_id
+// so raw-file URLs end in .pdf / .doc / .docx
+// (fixes browser force-download on extensionless URLs)
+// ======================================================
 
+const storage = new CloudinaryStorage({
 
-// MULTER - RESUME UPLOAD CONFIGURATION
+    cloudinary: cloudinary,
 
+    params: async (req, file) => {
 
-const storage = multer.diskStorage({
+        const originalExtension =
+            file.originalname
+                .split(".")
+                .pop()
+                .toLowerCase();
 
-    destination: function (req, file, cb) {
+        const baseName =
+            file.originalname
+                .replace(/\.[^/.]+$/, "")
+                .replace(/\s+/g, "_");
 
-        cb(null, uploadDir);
+        const uniquePublicId =
+            `${Date.now()}-${baseName}.${originalExtension}`;
 
-    },
+        return {
 
-    filename: function (req, file, cb) {
+            folder: "smarthire-resumes",
 
-        const extension =
-            path.extname(file.originalname).toLowerCase();
+            resource_type: "raw",
 
-        const uniqueName =
-            Date.now() +
-            "-" +
-            Math.round(Math.random() * 1E9) +
-            extension;
+            allowed_formats: ["pdf", "doc", "docx"],
 
-        cb(null, uniqueName);
+            public_id: uniquePublicId
+
+        };
 
     }
 
 });
 
-
-
+// ======================================================
 // MULTER CONFIGURATION
-
+// ======================================================
 
 const upload = multer({
-
     storage: storage,
 
     limits: {
@@ -68,13 +89,9 @@ const upload = multer({
     fileFilter: function (req, file, cb) {
 
         const allowedTypes = [
-
             "application/pdf",
-
             "application/msword",
-
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-
         ];
 
         if (allowedTypes.includes(file.mimetype)) {
@@ -90,112 +107,90 @@ const upload = multer({
             );
 
         }
-
     }
-
 });
 
-
-
-// APPLY FOR JOB - SHOW FORM
+// ======================================================
+// APPLY FOR JOB
 // GET /apply/:id
-
+// ======================================================
 
 router.get(
-
     "/apply/:id",
-
     isLoggedIn,
-
     applicationController.showApplyForm
-
 );
 
-
-
-// APPLY FOR JOB - SUBMIT FORM
+// ======================================================
+// SUBMIT APPLICATION
 // POST /apply/:id
-
+// ======================================================
 
 router.post(
-
     "/apply/:id",
-
     isLoggedIn,
-
     upload.single("resume"),
-
     applicationController.applyJob
-
 );
 
-
-
-// VIEW RECEIVED APPLICATIONS
+// ======================================================
+// VIEW APPLICATIONS
 // GET /applications
-
+// ======================================================
 
 router.get(
-
     "/applications",
-
     isLoggedIn,
-
     applicationController.viewApplications
-
 );
 
-
-
+// ======================================================
 // VIEW SINGLE APPLICATION
 // GET /applications/:id
-
+// ======================================================
 
 router.get(
-
     "/applications/:id",
-
     isLoggedIn,
-
     applicationController.viewApplication
-
 );
 
+// ======================================================
+// VIEW RESUME FILE (PROXY THROUGH SERVER)
+// GET /resume/view/:id
+// ======================================================
 
+router.get(
+    "/resume/view/:id",
+    isLoggedIn,
+    applicationController.viewResumeFile
+);
 
+// ======================================================
 // ACCEPT APPLICATION
 // POST /applications/:id/accept
-
+// ======================================================
 
 router.post(
-
     "/applications/:id/accept",
-
     isLoggedIn,
-
     applicationController.acceptApplication
-
 );
 
-
-
+// ======================================================
 // DELETE APPLICATION
 // POST /applications/:id/delete
-
+// ======================================================
 
 router.post(
-
     "/applications/:id/delete",
-
     isLoggedIn,
-
     applicationController.deleteApplication
-
 );
 
-
-
+// ======================================================
 // EXPORT ROUTER
-
+// ======================================================
 
 module.exports = router;
+

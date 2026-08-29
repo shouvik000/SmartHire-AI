@@ -1,172 +1,147 @@
-const db = require("../config/db");
-const fs = require("fs");
-const path = require("path");
+ 
+ const db = require("../config/db");
 const { PDFParse } = require("pdf-parse");
 const mammoth = require("mammoth");
 
 
-
-// UPLOAD DIRECTORY
-
-
-const uploadDir = path.join(
-    __dirname,
-    "..",
-    "uploads"
-);
-
-// Make sure uploads directory exists
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, {
-        recursive: true
-    });
-
-    console.log("✅ uploads directory created");
-}
-
-
-
-// EXTRACT TEXT FROM RESUME
-
+// ======================================================
+// EXTRACT TEXT FROM CLOUDINARY RESUME
+// ======================================================
 
 async function extractResumeText(file) {
 
-    if (!file) {
+    if (!file || !file.path) {
         return "";
     }
 
-    const filePath = path.join(
-        uploadDir,
-        file.filename
-    );
+    try {
 
-    const extension = path
-        .extname(file.originalname)
-        .toLowerCase();
+        console.log("Downloading resume from Cloudinary...");
+        console.log("Resume URL:", file.path);
 
-    
-    // PDF
-    
+        // Download Cloudinary file
+        const response = await fetch(file.path);
 
-    if (extension === ".pdf") {
-
-        try {
-
-            if (!fs.existsSync(filePath)) {
-                console.error(
-                    "Resume file not found:",
-                    filePath
-                );
-
-                return "";
-            }
-
-            const data = fs.readFileSync(filePath);
-
-            const parser = new PDFParse({
-                data: data
-            });
-
-            const result =
-                await parser.getText();
-
-            await parser.destroy();
-
-            return result.text || "";
-
-        } catch (error) {
+        if (!response.ok) {
 
             console.error(
-                "PDF Extraction Error:",
-                error
+                "Unable to download resume:",
+                response.status,
+                response.statusText
             );
 
             return "";
         }
-    }
+
+        // Convert response to Buffer
+        const arrayBuffer = await response.arrayBuffer();
+
+        const buffer = Buffer.from(arrayBuffer);
+
+        const originalName =
+            file.originalname || "";
+
+        const extension =
+            originalName
+                .toLowerCase()
+                .split(".")
+                .pop();
 
 
-    
-    // DOCX
-    
+        // ==================================================
+        // PDF
+        // ==================================================
 
-    if (extension === ".docx") {
+        if (extension === "pdf") {
 
-        try {
+            try {
 
-            if (!fs.existsSync(filePath)) {
-                console.error(
-                    "Resume file not found:",
-                    filePath
-                );
-
-                return "";
-            }
-
-            const result =
-                await mammoth.extractRawText({
-                    path: filePath
+                const parser = new PDFParse({
+                    data: buffer
                 });
 
-            return result.value || "";
+                const result =
+                    await parser.getText();
 
-        } catch (error) {
+                await parser.destroy();
 
-            console.error(
-                "DOCX Extraction Error:",
-                error
+                return result.text || "";
+
+            } catch (error) {
+
+                console.error(
+                    "PDF Extraction Error:",
+                    error
+                );
+
+                return "";
+            }
+        }
+
+
+        // ==================================================
+        // DOCX
+        // ==================================================
+
+        if (extension === "docx") {
+
+            try {
+
+                const result =
+                    await mammoth.extractRawText({
+                        buffer: buffer
+                    });
+
+                return result.value || "";
+
+            } catch (error) {
+
+                console.error(
+                    "DOCX Extraction Error:",
+                    error
+                );
+
+                return "";
+            }
+        }
+
+
+        // ==================================================
+        // DOC
+        // ==================================================
+
+        if (extension === "doc") {
+
+            console.log(
+                "DOC format uploaded."
+            );
+
+            console.log(
+                "Text extraction for DOC is not supported."
             );
 
             return "";
         }
-    }
 
 
-    
-    // DOC
-   
+        return "";
 
-    if (extension === ".doc") {
+    } catch (error) {
 
-        console.log(
-            "DOC format uploaded. Text extraction is not supported."
+        console.error(
+            "Resume Extraction Error:",
+            error
         );
 
         return "";
     }
-
-
-    
-    // TXT
-    
-
-    if (extension === ".txt") {
-
-        try {
-
-            return fs.readFileSync(
-                filePath,
-                "utf8"
-            );
-
-        } catch (error) {
-
-            console.error(
-                "TXT Extraction Error:",
-                error
-            );
-
-            return "";
-        }
-    }
-
-
-    return "";
 }
 
 
-// NORMALIZE SKILL
 
+// ======================================================
+// NORMALIZE SKILL
+// ======================================================
 
 function normalizeSkill(skill) {
 
@@ -179,26 +154,32 @@ function normalizeSkill(skill) {
 
 
 
+// ======================================================
 // CALCULATE RESUME MATCH SCORE
-
+// ======================================================
 
 function calculateMatchScore(
     resumeText,
     requiredSkills
 ) {
 
-    if (!resumeText || !requiredSkills) {
+    if (
+        !resumeText ||
+        !requiredSkills
+    ) {
 
         return {
             score: 0,
             matchedSkills: [],
             missingSkills: []
         };
+
     }
 
 
     const resume =
-        String(resumeText).toLowerCase();
+        String(resumeText)
+            .toLowerCase();
 
 
     const required =
@@ -217,6 +198,7 @@ function calculateMatchScore(
             matchedSkills: [],
             missingSkills: []
         };
+
     }
 
 
@@ -233,32 +215,44 @@ function calculateMatchScore(
         } else {
 
             missingSkills.push(skill);
+
         }
 
     });
 
 
-    const score = Math.round(
-        (
-            matchedSkills.length /
-            required.length
-        ) * 100
-    );
+    const score =
+        Math.round(
+            (
+                matchedSkills.length /
+                required.length
+            ) * 100
+        );
 
 
     return {
+
         score,
+
         matchedSkills,
+
         missingSkills
+
     };
+
 }
 
 
 
+// ======================================================
 // SHOW APPLY FORM
+// GET /apply/:id
+// ======================================================
 
-
-exports.showApplyForm = async (req, res) => {
+exports.showApplyForm = async (
+    req,
+    res
+) => {
 
     try {
 
@@ -271,17 +265,20 @@ exports.showApplyForm = async (req, res) => {
             return res.status(400).send(
                 "Invalid Job ID."
             );
+
         }
 
 
-        const result = await db.query(
+        const result =
+            await db.query(
 
-            `SELECT *
-             FROM jobs
-             WHERE id = $1`,
+                `SELECT *
+                 FROM jobs
+                 WHERE id = $1`,
 
-            [jobId]
-        );
+                [jobId]
+
+            );
 
 
         if (result.rows.length === 0) {
@@ -289,13 +286,15 @@ exports.showApplyForm = async (req, res) => {
             return res.status(404).send(
                 "Job Not Found"
             );
+
         }
 
 
         res.render(
             "applications/apply",
             {
-                job: result.rows[0]
+                job: result.rows[0],
+                user: req.session.user
             }
         );
 
@@ -311,16 +310,22 @@ exports.showApplyForm = async (req, res) => {
         res.status(500).send(
             "Unable to open application form."
         );
+
     }
 
 };
 
 
 
+// ======================================================
 // SUBMIT APPLICATION
+// POST /apply/:id
+// ======================================================
 
-
-exports.applyJob = async (req, res) => {
+exports.applyJob = async (
+    req,
+    res
+) => {
 
     try {
 
@@ -337,11 +342,20 @@ exports.applyJob = async (req, res) => {
             req.params.id
         );
 
+
         console.log(
             "Uploaded File:",
             req.file
-                ? req.file.filename
+                ? req.file.originalname
                 : "NO FILE"
+        );
+
+
+        console.log(
+            "Cloudinary URL:",
+            req.file
+                ? req.file.path
+                : "NO URL"
         );
 
 
@@ -356,9 +370,10 @@ exports.applyJob = async (req, res) => {
         } = req.body;
 
 
-        
+
+        // ==================================================
         // VALIDATE USER INPUT
-        
+        // ==================================================
 
         if (
             !applicant_name ||
@@ -369,8 +384,14 @@ exports.applyJob = async (req, res) => {
             return res.status(400).send(
                 "Please fill all required fields."
             );
+
         }
 
+
+
+        // ==================================================
+        // VALIDATE JOB ID
+        // ==================================================
 
         const jobId =
             Number(req.params.id);
@@ -381,50 +402,18 @@ exports.applyJob = async (req, res) => {
             return res.status(400).send(
                 "Invalid Job ID."
             );
+
         }
 
 
-        
-        // GET JOB
-       
 
-        const jobResult =
-            await db.query(
-
-                `SELECT *
-                 FROM jobs
-                 WHERE id = $1`,
-
-                [jobId]
-            );
-
-
-        if (jobResult.rows.length === 0) {
-
-            return res.status(404).send(
-                "Job Not Found"
-            );
-        }
-
-
-        const job =
-            jobResult.rows[0];
-
-
-        console.log(
-            "Job Found:",
-            job.title
-        );
-
-
-        
+        // ==================================================
         // CHECK RESUME
-        
+        // ==================================================
 
         if (!req.file) {
 
             return res.status(400).send(`
-
                 <div style="
                     font-family: Arial;
                     text-align: center;
@@ -443,44 +432,70 @@ exports.applyJob = async (req, res) => {
                     </a>
 
                 </div>
-
             `);
+
         }
 
 
-        
-        // CHECK FILE EXISTS
-       
 
-        const resumePath =
-            path.join(
-                uploadDir,
-                req.file.filename
-            );
+        // ==================================================
+        // CHECK CLOUDINARY URL
+        // ==================================================
 
-
-        if (!fs.existsSync(resumePath)) {
+        if (!req.file.path) {
 
             console.error(
-                "Uploaded resume does not exist:",
-                resumePath
+                "Cloudinary URL missing."
             );
 
             return res.status(500).send(
                 "Resume upload failed. Please try again."
             );
+
         }
 
 
+
+        // ==================================================
+        // GET JOB
+        // ==================================================
+
+        const jobResult =
+            await db.query(
+
+                `SELECT *
+                 FROM jobs
+                 WHERE id = $1`,
+
+                [jobId]
+
+            );
+
+
+        if (jobResult.rows.length === 0) {
+
+            return res.status(404).send(
+                "Job Not Found"
+            );
+
+        }
+
+
+        const job =
+            jobResult.rows[0];
+
+
         console.log(
-            "Resume saved:",
-            resumePath
+            "Job Found:",
+            job.title
         );
 
 
-        
+
+        // ==================================================
         // EXTRACT RESUME TEXT
-        
+        // ==================================================
+
         const resumeText =
             await extractResumeText(
                 req.file
@@ -493,9 +508,10 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        
+
+        // ==================================================
         // CALCULATE MATCH SCORE
-        
+        // ==================================================
 
         const matchResult =
             calculateMatchScore(
@@ -512,15 +528,24 @@ exports.applyJob = async (req, res) => {
             job.required_skills
         );
 
+
+        console.log(
+            "Applicant Skills:",
+            skills
+        );
+
+
         console.log(
             "Matched Skills:",
             matchResult.matchedSkills
         );
 
+
         console.log(
             "Missing Skills:",
             matchResult.missingSkills
         );
+
 
         console.log(
             "Resume Match Score:",
@@ -528,9 +553,10 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        
+
+        // ==================================================
         // SAVE APPLICATION
-        
+        // ==================================================
 
         const applicationResult =
             await db.query(
@@ -567,13 +593,16 @@ exports.applyJob = async (req, res) => {
 
                     cover_letter || "",
 
-                    req.file.filename,
+                    // IMPORTANT:
+                    // Store Cloudinary URL
+                    req.file.path,
 
                     matchResult.score,
 
                     "Applied"
 
                 ]
+
             );
 
 
@@ -583,9 +612,11 @@ exports.applyJob = async (req, res) => {
         );
 
 
-        
+
+        // ==================================================
         // SUCCESS PAGE
-       
+        // ==================================================
+
         return res.render(
 
             "applications/success",
@@ -608,6 +639,7 @@ exports.applyJob = async (req, res) => {
                     matchResult.missingSkills
 
             }
+
         );
 
 
@@ -649,7 +681,11 @@ exports.applyJob = async (req, res) => {
                     submitting your application.
                 </p>
 
-                <a
+                <p>
+                    Please try again.
+                </p>
+
+                
                     href="/apply/${req.params.id}"
                     style="
                         display:inline-block;
@@ -667,23 +703,31 @@ exports.applyJob = async (req, res) => {
             </div>
 
         `);
+
     }
 
 };
 
 
-// =====================================================
+
+// ======================================================
 // VIEW APPLICATIONS
 // ONLY APPLICATIONS FOR LOGGED-IN USER'S JOBS
-// =====================================================
+// ======================================================
 
-exports.viewApplications = async (req, res) => {
+exports.viewApplications = async (
+    req,
+    res
+) => {
 
     try {
 
         if (!req.session.user) {
 
-            return res.redirect("/login");
+            return res.redirect(
+                "/login"
+            );
+
         }
 
 
@@ -691,44 +735,55 @@ exports.viewApplications = async (req, res) => {
             req.session.user.id;
 
 
-        const result = await db.query(
+        const result =
+            await db.query(
 
-            `SELECT
+                `SELECT
 
-                applications.id,
-                applications.job_id,
-                applications.applicant_name,
-                applications.email,
-                applications.phone,
-                applications.skills,
-                applications.cover_letter,
-                applications.resume_link,
-                applications.created_at,
-                applications.match_score,
-                applications.status,
+                    applications.id,
+                    applications.job_id,
+                    applications.applicant_name,
+                    applications.email,
+                    applications.phone,
+                    applications.skills,
+                    applications.cover_letter,
+                    applications.resume_link,
+                    applications.created_at,
+                    applications.match_score,
+                    applications.status,
 
-                jobs.title AS job_title,
-                jobs.company,
-                jobs.location
+                    jobs.title AS job_title,
+                    jobs.company,
+                    jobs.location
 
-             FROM applications
+                 FROM applications
 
-             INNER JOIN jobs
-                ON jobs.id = applications.job_id
+                 INNER JOIN jobs
+                    ON jobs.id = applications.job_id
 
-             WHERE jobs.created_by = $1
+                 WHERE jobs.created_by = $1
 
-             ORDER BY applications.id DESC`,
+                 ORDER BY applications.id DESC`,
 
-            [userId]
-        );
+                [userId]
+
+            );
 
 
         res.render(
+
             "applications/applications",
+
             {
-                applications: result.rows
+
+                applications:
+                    result.rows,
+
+                user:
+                    req.session.user
+
             }
+
         );
 
 
@@ -743,22 +798,30 @@ exports.viewApplications = async (req, res) => {
         res.status(500).send(
             "Unable to load applications."
         );
+
     }
 
 };
 
 
 
+// ======================================================
 // VIEW SINGLE APPLICATION
+// ======================================================
 
-
-exports.viewApplication = async (req, res) => {
+exports.viewApplication = async (
+    req,
+    res
+) => {
 
     try {
 
         if (!req.session.user) {
 
-            return res.redirect("/login");
+            return res.redirect(
+                "/login"
+            );
+
         }
 
 
@@ -775,33 +838,39 @@ exports.viewApplication = async (req, res) => {
             return res.status(400).send(
                 "Invalid Application ID."
             );
+
         }
 
 
-        const result = await db.query(
+        const result =
+            await db.query(
 
-            `SELECT
+                `SELECT
 
-                applications.*,
+                    applications.*,
 
-                jobs.title AS job_title,
-                jobs.company,
-                jobs.location,
-                jobs.required_skills
+                    jobs.title AS job_title,
+                    jobs.company,
+                    jobs.location,
+                    jobs.required_skills
 
-             FROM applications
+                 FROM applications
 
-             INNER JOIN jobs
-                ON jobs.id = applications.job_id
+                 INNER JOIN jobs
+                    ON jobs.id = applications.job_id
 
-             WHERE applications.id = $1
-             AND jobs.created_by = $2`,
+                 WHERE applications.id = $1
+                 AND jobs.created_by = $2`,
 
-            [
-                applicationId,
-                userId
-            ]
-        );
+                [
+
+                    applicationId,
+
+                    userId
+
+                ]
+
+            );
 
 
         if (result.rows.length === 0) {
@@ -809,14 +878,33 @@ exports.viewApplication = async (req, res) => {
             return res.status(404).send(
                 "Application not found."
             );
+
         }
 
 
+        const application =
+            result.rows[0];
+
+
+        application.match_score =
+            Number(
+                application.match_score || 0
+            );
+
+
         res.render(
+
             "applications/viewApplication",
+
             {
-                application: result.rows[0]
+
+                application,
+
+                user:
+                    req.session.user
+
             }
+
         );
 
 
@@ -831,22 +919,34 @@ exports.viewApplication = async (req, res) => {
         res.status(500).send(
             "Unable to load application."
         );
+
     }
 
 };
 
 
 
-// ACCEPT APPLICATION
+// ======================================================
+// VIEW RESUME FILE (PROXY THROUGH SERVER)
+// GET /resume/view/:id
+// Downloads the file from Cloudinary server-side and
+// re-serves it with "inline" disposition so PDFs open
+// in the browser instead of force-downloading.
+// ======================================================
 
-
-exports.acceptApplication = async (req, res) => {
+exports.viewResumeFile = async (
+    req,
+    res
+) => {
 
     try {
 
         if (!req.session.user) {
 
-            return res.redirect("/login");
+            return res.redirect(
+                "/login"
+            );
+
         }
 
 
@@ -863,101 +963,16 @@ exports.acceptApplication = async (req, res) => {
             return res.status(400).send(
                 "Invalid Application ID."
             );
+
         }
 
 
-        const result = await db.query(
+        // ==================================================
+        // OWNERSHIP CHECK
+        // Only the recruiter who owns the job can view it
+        // ==================================================
 
-            `UPDATE applications
-
-             SET status = 'Accepted'
-
-             WHERE id = $1
-
-             AND job_id IN (
-
-                 SELECT id
-                 FROM jobs
-                 WHERE created_by = $2
-
-             )
-
-             RETURNING *`,
-
-            [
-                applicationId,
-                userId
-            ]
-        );
-
-
-        if (result.rows.length === 0) {
-
-            return res.status(404).send(
-                "Application not found or you do not have permission."
-            );
-        }
-
-
-        console.log(
-            `Application ${applicationId} accepted by user ${userId}`
-        );
-
-
-        res.redirect("/applications");
-
-
-    } catch (err) {
-
-        console.error(
-            "Accept Application Error:",
-            err
-        );
-
-
-        res.status(500).send(
-            "Unable to accept application."
-        );
-    }
-
-};
-
-
-
-// DELETE APPLICATION
-
-
-exports.deleteApplication = async (req, res) => {
-
-    try {
-
-        if (!req.session.user) {
-
-            return res.redirect("/login");
-        }
-
-
-        const userId =
-            req.session.user.id;
-
-
-        const applicationId =
-            Number(req.params.id);
-
-
-        if (!Number.isInteger(applicationId)) {
-
-            return res.status(400).send(
-                "Invalid Application ID."
-            );
-        }
-
-
-        
-        // GET RESUME FILE
-       
-
-        const applicationResult =
+        const result =
             await db.query(
 
                 `SELECT
@@ -972,9 +987,296 @@ exports.deleteApplication = async (req, res) => {
                  AND jobs.created_by = $2`,
 
                 [
+
                     applicationId,
+
                     userId
+
                 ]
+
+            );
+
+
+        if (
+            result.rows.length === 0 ||
+            !result.rows[0].resume_link
+        ) {
+
+            return res.status(404).send(
+                "Resume not found."
+            );
+
+        }
+
+
+        const resumeUrl =
+            result.rows[0].resume_link;
+
+
+        console.log(
+            "Proxying resume:",
+            resumeUrl
+        );
+
+
+        // ==================================================
+        // FETCH FILE FROM CLOUDINARY
+        // ==================================================
+
+        const response =
+            await fetch(resumeUrl);
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Cloudinary fetch failed:",
+                response.status,
+                response.statusText
+            );
+
+            return res.status(502).send(
+                "Unable to fetch resume from storage."
+            );
+
+        }
+
+
+        const arrayBuffer =
+            await response.arrayBuffer();
+
+
+        const buffer =
+            Buffer.from(arrayBuffer);
+
+
+        // ==================================================
+        // DETERMINE CONTENT TYPE FROM EXTENSION
+        // ==================================================
+
+        const extension =
+            resumeUrl
+                .toLowerCase()
+                .split(".")
+                .pop();
+
+
+        const contentTypes = {
+
+            pdf: "application/pdf",
+
+            doc: "application/msword",
+
+            docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+        };
+
+
+        res.setHeader(
+            "Content-Type",
+            contentTypes[extension] ||
+                "application/octet-stream"
+        );
+
+
+        // ==================================================
+        // FORCE INLINE DISPLAY (NOT DOWNLOAD)
+        // ==================================================
+
+        res.setHeader(
+            "Content-Disposition",
+            "inline"
+        );
+
+
+        return res.send(buffer);
+
+
+    } catch (err) {
+
+        console.error(
+            "View Resume File Error:",
+            err
+        );
+
+        res.status(500).send(
+            "Unable to load resume."
+        );
+
+    }
+
+};
+
+
+
+// ======================================================
+// ACCEPT APPLICATION
+// ======================================================
+
+exports.acceptApplication = async (
+    req,
+    res
+) => {
+
+    try {
+
+        if (!req.session.user) {
+
+            return res.redirect(
+                "/login"
+            );
+
+        }
+
+
+        const userId =
+            req.session.user.id;
+
+
+        const applicationId =
+            Number(req.params.id);
+
+
+        if (!Number.isInteger(applicationId)) {
+
+            return res.status(400).send(
+                "Invalid Application ID."
+            );
+
+        }
+
+
+        const result =
+            await db.query(
+
+                `UPDATE applications
+
+                 SET status = 'Accepted'
+
+                 WHERE id = $1
+
+                 AND job_id IN (
+
+                     SELECT id
+                     FROM jobs
+                     WHERE created_by = $2
+
+                 )
+
+                 RETURNING *`,
+
+                [
+
+                    applicationId,
+
+                    userId
+
+                ]
+
+            );
+
+
+        if (result.rows.length === 0) {
+
+            return res.status(404).send(
+                "Application not found or you do not have permission."
+            );
+
+        }
+
+
+        console.log(
+            `Application ${applicationId} accepted by user ${userId}`
+        );
+
+
+        res.redirect(
+            "/applications"
+        );
+
+
+    } catch (err) {
+
+        console.error(
+            "Accept Application Error:",
+            err
+        );
+
+
+        res.status(500).send(
+            "Unable to accept application."
+        );
+
+    }
+
+};
+
+
+
+// ======================================================
+// DELETE APPLICATION
+// ======================================================
+
+exports.deleteApplication = async (
+    req,
+    res
+) => {
+
+    try {
+
+        if (!req.session.user) {
+
+            return res.redirect(
+                "/login"
+            );
+
+        }
+
+
+        const userId =
+            req.session.user.id;
+
+
+        const applicationId =
+            Number(req.params.id);
+
+
+        if (!Number.isInteger(applicationId)) {
+
+            return res.status(400).send(
+                "Invalid Application ID."
+            );
+
+        }
+
+
+        // ==================================================
+        // CHECK APPLICATION BELONGS TO USER'S JOB
+        // ==================================================
+
+        const applicationResult =
+            await db.query(
+
+                `SELECT
+                    applications.id
+
+                 FROM applications
+
+                 INNER JOIN jobs
+                    ON jobs.id = applications.job_id
+
+                 WHERE applications.id = $1
+
+                 AND jobs.created_by = $2`,
+
+                [
+
+                    applicationId,
+
+                    userId
+
+                ]
+
             );
 
 
@@ -983,73 +1285,23 @@ exports.deleteApplication = async (req, res) => {
             return res.status(404).send(
                 "Application not found or you do not have permission."
             );
+
         }
 
 
-        const resumeLink =
-            applicationResult.rows[0].resume_link;
-
-
-        
+        // ==================================================
         // DELETE APPLICATION
-        
+        // ==================================================
 
         await db.query(
 
             `DELETE FROM applications
 
-             WHERE id = $1
+             WHERE id = $1`,
 
-             AND job_id IN (
+            [applicationId]
 
-                 SELECT id
-                 FROM jobs
-                 WHERE created_by = $2
-
-             )`,
-
-            [
-                applicationId,
-                userId
-            ]
         );
-
-
-       
-        // DELETE RESUME
-        
-
-        if (resumeLink) {
-
-            const resumePath =
-                path.join(
-                    uploadDir,
-                    resumeLink
-                );
-
-
-            if (fs.existsSync(resumePath)) {
-
-                try {
-
-                    fs.unlinkSync(
-                        resumePath
-                    );
-
-                    console.log(
-                        "Resume deleted:",
-                        resumeLink
-                    );
-
-                } catch (fileError) {
-
-                    console.error(
-                        "Resume File Delete Error:",
-                        fileError
-                    );
-                }
-            }
-        }
 
 
         console.log(
@@ -1057,7 +1309,9 @@ exports.deleteApplication = async (req, res) => {
         );
 
 
-        res.redirect("/applications");
+        res.redirect(
+            "/applications"
+        );
 
 
     } catch (err) {
@@ -1071,6 +1325,8 @@ exports.deleteApplication = async (req, res) => {
         res.status(500).send(
             "Unable to delete application."
         );
+
     }
 
 };
+

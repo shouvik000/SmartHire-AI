@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -44,7 +45,7 @@
         </div>
 
 
-        <a
+        
             href="/applications"
             class="btn btn-outline-primary"
         >
@@ -234,12 +235,13 @@
 
             <% if (application.resume_link) { %>
 
-                <a
-                    href="/uploads/<%= application.resume_link %>"
+                
+                    href="/resume/view/<%= application.id %>"
                     target="_blank"
+                    rel="noopener noreferrer"
                     class="btn btn-primary"
                 >
-                    View Resume
+                 View Resume
                 </a>
 
             <% } else { %>

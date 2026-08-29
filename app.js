@@ -73,21 +73,8 @@ app.use(
 
 
 
-// RESUME UPLOADS
-
-
-// Files inside:
-// SmartHire-AI/uploads/
-//
-// will be accessible as:
-// /uploads/filename.pdf
-
-app.use(
-    "/uploads",
-    express.static(
-        path.join(__dirname, "uploads")
-    )
-);
+// RESUME UPLOADS ARE NOW STORED ON CLOUDINARY
+// (local /uploads static route removed — no longer needed)
 
 
 
