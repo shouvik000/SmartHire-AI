@@ -1,5 +1,5 @@
- 
- const db = require("../config/db");
+
+const db = require("../config/db");
 const { PDFParse } = require("pdf-parse");
 const mammoth = require("mammoth");
 
@@ -19,7 +19,7 @@ async function extractResumeText(file) {
         console.log("Downloading resume from Cloudinary...");
         console.log("Resume URL:", file.path);
 
-        // Download Cloudinary file
+        // Download resume from Cloudinary
         const response = await fetch(file.path);
 
         if (!response.ok) {
@@ -35,7 +35,6 @@ async function extractResumeText(file) {
 
         // Convert response to Buffer
         const arrayBuffer = await response.arrayBuffer();
-
         const buffer = Buffer.from(arrayBuffer);
 
         const originalName =
@@ -148,8 +147,257 @@ function normalizeSkill(skill) {
     return String(skill)
         .toLowerCase()
         .trim()
+        .replace(/[.]/g, "")
+        .replace(/[-_]/g, " ")
         .replace(/\s+/g, " ");
 
+}
+
+
+
+// ======================================================
+// SKILL ALIASES
+// ======================================================
+// This helps match different ways of writing the same skill.
+//
+// Example:
+// Node.js      -> node js
+// NodeJS       -> node js
+// PostgreSQL   -> postgres
+// Express.js   -> express
+// MongoDB      -> mongo db
+// JavaScript   -> javascript
+// JS           -> javascript
+// ======================================================
+
+function getSkillAliases(skill) {
+
+    const normalized = normalizeSkill(skill);
+
+    const aliases = new Set();
+
+    aliases.add(normalized);
+
+
+    // Node.js / NodeJS
+    if (
+        normalized === "node js" ||
+        normalized === "nodejs"
+    ) {
+
+        aliases.add("node js");
+        aliases.add("nodejs");
+        aliases.add("node");
+
+    }
+
+
+    // Express.js / ExpressJS
+    if (
+        normalized === "express js" ||
+        normalized === "expressjs"
+    ) {
+
+        aliases.add("express js");
+        aliases.add("expressjs");
+        aliases.add("express");
+
+    }
+
+
+    // PostgreSQL / Postgres
+    if (
+        normalized === "postgresql" ||
+        normalized === "postgres"
+    ) {
+
+        aliases.add("postgresql");
+        aliases.add("postgres");
+
+    }
+
+
+    // MySQL
+    if (
+        normalized === "mysql"
+    ) {
+
+        aliases.add("mysql");
+        aliases.add("my sql");
+
+    }
+
+
+    // MongoDB
+    if (
+        normalized === "mongodb" ||
+        normalized === "mongo db" ||
+        normalized === "mongo"
+    ) {
+
+        aliases.add("mongodb");
+        aliases.add("mongo db");
+        aliases.add("mongo");
+
+    }
+
+
+    // JavaScript / JS
+    if (
+        normalized === "javascript" ||
+        normalized === "java script" ||
+        normalized === "js"
+    ) {
+
+        aliases.add("javascript");
+        aliases.add("java script");
+        aliases.add("js");
+
+    }
+
+
+    // TypeScript / TS
+    if (
+        normalized === "typescript" ||
+        normalized === "type script" ||
+        normalized === "ts"
+    ) {
+
+        aliases.add("typescript");
+        aliases.add("type script");
+        aliases.add("ts");
+
+    }
+
+
+    // React.js / React
+    if (
+        normalized === "react js" ||
+        normalized === "reactjs" ||
+        normalized === "react"
+    ) {
+
+        aliases.add("react");
+        aliases.add("react js");
+        aliases.add("reactjs");
+
+    }
+
+
+    // Next.js
+    if (
+        normalized === "next js" ||
+        normalized === "nextjs" ||
+        normalized === "next"
+    ) {
+
+        aliases.add("next");
+        aliases.add("next js");
+        aliases.add("nextjs");
+
+    }
+
+
+    // GitHub
+    if (
+        normalized === "github" ||
+        normalized === "git hub"
+    ) {
+
+        aliases.add("github");
+        aliases.add("git hub");
+
+    }
+
+
+    // Git
+    if (
+        normalized === "git"
+    ) {
+
+        aliases.add("git");
+
+    }
+
+
+    // REST API / RESTful API
+    if (
+        normalized === "rest api" ||
+        normalized === "restful api" ||
+        normalized === "rest"
+    ) {
+
+        aliases.add("rest api");
+        aliases.add("restful api");
+        aliases.add("rest");
+
+    }
+
+
+    // JWT
+    if (
+        normalized === "jwt" ||
+        normalized === "json web token"
+    ) {
+
+        aliases.add("jwt");
+        aliases.add("json web token");
+
+    }
+
+
+    // HTML
+    if (
+        normalized === "html" ||
+        normalized === "html5"
+    ) {
+
+        aliases.add("html");
+        aliases.add("html5");
+
+    }
+
+
+    // CSS
+    if (
+        normalized === "css" ||
+        normalized === "css3"
+    ) {
+
+        aliases.add("css");
+        aliases.add("css3");
+
+    }
+
+
+    return Array.from(aliases);
+}
+
+
+
+// ======================================================
+// CHECK WHETHER SKILL EXISTS IN TEXT
+// ======================================================
+
+function skillExistsInText(text, skill) {
+
+    const normalizedText =
+        normalizeSkill(text);
+
+    const aliases =
+        getSkillAliases(skill);
+
+
+    for (const alias of aliases) {
+
+        if (normalizedText.includes(alias)) {
+            return true;
+        }
+
+    }
+
+
+    return false;
 }
 
 
@@ -160,13 +408,15 @@ function normalizeSkill(skill) {
 
 function calculateMatchScore(
     resumeText,
-    requiredSkills
+    requiredSkills,
+    applicantSkills = ""
 ) {
 
-    if (
-        !resumeText ||
-        !requiredSkills
-    ) {
+    // --------------------------------------------------
+    // If no required skills were entered
+    // --------------------------------------------------
+
+    if (!requiredSkills) {
 
         return {
             score: 0,
@@ -177,10 +427,9 @@ function calculateMatchScore(
     }
 
 
-    const resume =
-        String(resumeText)
-            .toLowerCase();
-
+    // --------------------------------------------------
+    // Convert required skills into array
+    // --------------------------------------------------
 
     const required =
         String(requiredSkills)
@@ -202,24 +451,79 @@ function calculateMatchScore(
     }
 
 
+    // --------------------------------------------------
+    // Resume text
+    // --------------------------------------------------
+
+    const resume =
+        String(resumeText || "");
+
+
+    // --------------------------------------------------
+    // Applicant submitted skills
+    // --------------------------------------------------
+
+    const candidateSkills =
+        String(applicantSkills || "");
+
+
     const matchedSkills = [];
     const missingSkills = [];
 
 
-    required.forEach(skill => {
+    // --------------------------------------------------
+    // Check every required skill
+    // --------------------------------------------------
 
-        if (resume.includes(skill)) {
+    required.forEach(requiredSkill => {
 
-            matchedSkills.push(skill);
+        const foundInResume =
+            skillExistsInText(
+                resume,
+                requiredSkill
+            );
+
+
+        const foundInApplicantSkills =
+            skillExistsInText(
+                candidateSkills,
+                requiredSkill
+            );
+
+
+        // ------------------------------------------------
+        // Skill is considered matched if:
+        //
+        // 1. Found in resume
+        // OR
+        // 2. Candidate explicitly submitted the skill
+        //
+        // Resume is still the primary source.
+        // ------------------------------------------------
+
+        if (
+            foundInResume ||
+            foundInApplicantSkills
+        ) {
+
+            matchedSkills.push(
+                requiredSkill
+            );
 
         } else {
 
-            missingSkills.push(skill);
+            missingSkills.push(
+                requiredSkill
+            );
 
         }
 
     });
 
+
+    // --------------------------------------------------
+    // Calculate percentage
+    // --------------------------------------------------
 
     const score =
         Math.round(
@@ -414,6 +718,7 @@ exports.applyJob = async (
         if (!req.file) {
 
             return res.status(400).send(`
+
                 <div style="
                     font-family: Arial;
                     text-align: center;
@@ -432,6 +737,7 @@ exports.applyJob = async (
                     </a>
 
                 </div>
+
             `);
 
         }
@@ -493,6 +799,23 @@ exports.applyJob = async (
 
 
         // ==================================================
+        // SHOW REQUIRED SKILLS
+        // ==================================================
+
+        console.log(
+            "Required Skills:",
+            job.required_skills
+        );
+
+
+        console.log(
+            "Applicant Skills:",
+            skills
+        );
+
+
+
+        // ==================================================
         // EXTRACT RESUME TEXT
         // ==================================================
 
@@ -508,6 +831,13 @@ exports.applyJob = async (
         );
 
 
+        // IMPORTANT DEBUG
+        console.log(
+            "Resume Text Preview:",
+            resumeText.substring(0, 500)
+        );
+
+
 
         // ==================================================
         // CALCULATE MATCH SCORE
@@ -518,21 +848,11 @@ exports.applyJob = async (
 
                 resumeText,
 
-                job.required_skills
+                job.required_skills,
+
+                skills
 
             );
-
-
-        console.log(
-            "Required Skills:",
-            job.required_skills
-        );
-
-
-        console.log(
-            "Applicant Skills:",
-            skills
-        );
 
 
         console.log(
@@ -593,8 +913,7 @@ exports.applyJob = async (
 
                     cover_letter || "",
 
-                    // IMPORTANT:
-                    // Store Cloudinary URL
+                    // Cloudinary URL
                     req.file.path,
 
                     matchResult.score,
@@ -678,14 +997,14 @@ exports.applyJob = async (
 
                 <p>
                     Something went wrong while
-                    submitting your application.
+                    submitting the application.
                 </p>
 
                 <p>
                     Please try again.
                 </p>
 
-                
+                <a
                     href="/apply/${req.params.id}"
                     style="
                         display:inline-block;
@@ -927,11 +1246,8 @@ exports.viewApplication = async (
 
 
 // ======================================================
-// VIEW RESUME FILE (PROXY THROUGH SERVER)
+// VIEW RESUME FILE
 // GET /resume/view/:id
-// Downloads the file from Cloudinary server-side and
-// re-serves it with "inline" disposition so PDFs open
-// in the browser instead of force-downloading.
 // ======================================================
 
 exports.viewResumeFile = async (
@@ -969,7 +1285,6 @@ exports.viewResumeFile = async (
 
         // ==================================================
         // OWNERSHIP CHECK
-        // Only the recruiter who owns the job can view it
         // ==================================================
 
         const result =
@@ -1051,7 +1366,7 @@ exports.viewResumeFile = async (
 
 
         // ==================================================
-        // DETERMINE CONTENT TYPE FROM EXTENSION
+        // DETERMINE CONTENT TYPE
         // ==================================================
 
         const extension =
@@ -1080,7 +1395,7 @@ exports.viewResumeFile = async (
 
 
         // ==================================================
-        // FORCE INLINE DISPLAY (NOT DOWNLOAD)
+        // INLINE DISPLAY
         // ==================================================
 
         res.setHeader(
@@ -1098,6 +1413,7 @@ exports.viewResumeFile = async (
             "View Resume File Error:",
             err
         );
+
 
         res.status(500).send(
             "Unable to load resume."
@@ -1329,4 +1645,6 @@ exports.deleteApplication = async (
     }
 
 };
+
+
 
