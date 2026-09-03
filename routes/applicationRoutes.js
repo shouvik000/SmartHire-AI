@@ -9,9 +9,9 @@ const cloudinary = require("cloudinary").v2;
 const applicationController = require("../controllers/applicationController");
 const { isLoggedIn } = require("../middleware/authMiddleware");
 
-// ======================================================
+
 // CLOUDINARY CONFIGURATION
-// ======================================================
+
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -19,25 +19,28 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// ======================================================
+
 // CLOUDINARY CONNECTION TEST
-// ======================================================
+
 
 cloudinary.api.ping()
     .then(() => {
-        console.log("✅ Cloudinary Connected Successfully");
+        console.log("Cloudinary Connected Successfully");
     })
     .catch((err) => {
-        console.error("❌ Cloudinary Connection Failed");
+        console.error("Cloudinary Connection Failed");
         console.error(err.message);
     });
 
-// ======================================================
-// CLOUDINARY STORAGE
-// Keeps the original file extension in the public_id
-// so raw-file URLs end in .pdf / .doc / .docx
-// (fixes browser force-download on extensionless URLs)
-// ======================================================
+
+         // CLOUDINARY STORAGE
+
+/* 
+Keeps the original file extension in the public_id
+ so raw-file URLs end in .pdf / .doc / .docx
+ (fixes browser force-download on extensionless URLs) 
+ */
+
 
 const storage = new CloudinaryStorage({
 
@@ -75,9 +78,9 @@ const storage = new CloudinaryStorage({
 
 });
 
-// ======================================================
+
 // MULTER CONFIGURATION
-// ======================================================
+
 
 const upload = multer({
     storage: storage,
@@ -110,10 +113,9 @@ const upload = multer({
     }
 });
 
-// ======================================================
+
 // APPLY FOR JOB
 // GET /apply/:id
-// ======================================================
 
 router.get(
     "/apply/:id",
@@ -121,10 +123,10 @@ router.get(
     applicationController.showApplyForm
 );
 
-// ======================================================
+
 // SUBMIT APPLICATION
 // POST /apply/:id
-// ======================================================
+
 
 router.post(
     "/apply/:id",
@@ -133,10 +135,10 @@ router.post(
     applicationController.applyJob
 );
 
-// ======================================================
+
 // VIEW APPLICATIONS
 // GET /applications
-// ======================================================
+
 
 router.get(
     "/applications",
@@ -144,10 +146,10 @@ router.get(
     applicationController.viewApplications
 );
 
-// ======================================================
+
 // VIEW SINGLE APPLICATION
 // GET /applications/:id
-// ======================================================
+
 
 router.get(
     "/applications/:id",
@@ -155,10 +157,10 @@ router.get(
     applicationController.viewApplication
 );
 
-// ======================================================
+
 // VIEW RESUME FILE (PROXY THROUGH SERVER)
 // GET /resume/view/:id
-// ======================================================
+
 
 router.get(
     "/resume/view/:id",
@@ -166,10 +168,12 @@ router.get(
     applicationController.viewResumeFile
 );
 
-// ======================================================
-// ACCEPT APPLICATION
-// POST /applications/:id/accept
-// ======================================================
+
+/*      
+           ACCEPT APPLICATION
+    POST /applications/:id/accept 
+                                   */
+
 
 router.post(
     "/applications/:id/accept",
@@ -177,10 +181,10 @@ router.post(
     applicationController.acceptApplication
 );
 
-// ======================================================
+
 // DELETE APPLICATION
 // POST /applications/:id/delete
-// ======================================================
+
 
 router.post(
     "/applications/:id/delete",
@@ -188,9 +192,9 @@ router.post(
     applicationController.deleteApplication
 );
 
-// ======================================================
+
 // EXPORT ROUTER
-// ======================================================
+
 
 module.exports = router;
 
