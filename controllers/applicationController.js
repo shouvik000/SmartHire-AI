@@ -4,9 +4,9 @@ const { PDFParse } = require("pdf-parse");
 const mammoth = require("mammoth");
 
 
-// ======================================================
+
 // EXTRACT TEXT FROM CLOUDINARY RESUME
-// ======================================================
+
 
 async function extractResumeText(file) {
 
@@ -33,6 +33,7 @@ async function extractResumeText(file) {
             return "";
         }
 
+
         // Convert response to Buffer
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
@@ -47,9 +48,9 @@ async function extractResumeText(file) {
                 .pop();
 
 
-        // ==================================================
+        
         // PDF
-        // ==================================================
+       
 
         if (extension === "pdf") {
 
@@ -78,9 +79,9 @@ async function extractResumeText(file) {
         }
 
 
-        // ==================================================
+        
         // DOCX
-        // ==================================================
+        
 
         if (extension === "docx") {
 
@@ -105,9 +106,9 @@ async function extractResumeText(file) {
         }
 
 
-        // ==================================================
+        
         // DOC
-        // ==================================================
+        
 
         if (extension === "doc") {
 
@@ -138,9 +139,9 @@ async function extractResumeText(file) {
 
 
 
-// ======================================================
+
 // NORMALIZE SKILL
-// ======================================================
+
 
 function normalizeSkill(skill) {
 
@@ -155,20 +156,20 @@ function normalizeSkill(skill) {
 
 
 
-// ======================================================
-// SKILL ALIASES
-// ======================================================
-// This helps match different ways of writing the same skill.
-//
-// Example:
-// Node.js      -> node js
-// NodeJS       -> node js
-// PostgreSQL   -> postgres
-// Express.js   -> express
-// MongoDB      -> mongo db
-// JavaScript   -> javascript
-// JS           -> javascript
-// ======================================================
+
+/*           SKILL ALIASES
+
+   This helps match different ways of writing the same skill.
+
+       Example:
+   Node.js      -> node js
+   NodeJS       -> node js
+   PostgreSQL   -> postgres
+   Express.js   -> express
+  MongoDB      -> mongo db
+  JavaScript   -> javascript
+  JS           -> javascript
+*/
 
 function getSkillAliases(skill) {
 
