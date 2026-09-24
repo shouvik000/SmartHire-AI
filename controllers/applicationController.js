@@ -692,11 +692,7 @@ exports.applyJob = async (
 
         }
 
-
-
-        // ==================================================
-        // VALIDATE JOB ID
-        // ==================================================
+        // Validate Job ID
 
         const jobId =
             Number(req.params.id);
@@ -710,11 +706,7 @@ exports.applyJob = async (
 
         }
 
-
-
-        // ==================================================
-        // CHECK RESUME
-        // ==================================================
+        //Check Resume 
 
         if (!req.file) {
 
@@ -743,11 +735,7 @@ exports.applyJob = async (
 
         }
 
-
-
-        // ==================================================
-        // CHECK CLOUDINARY URL
-        // ==================================================
+        //Check Cloudinary URL  
 
         if (!req.file.path) {
 
@@ -761,11 +749,7 @@ exports.applyJob = async (
 
         }
 
-
-
-        // ==================================================
-        // GET JOB
-        // ==================================================
+        //Get Job 
 
         const jobResult =
             await db.query(
