@@ -1230,10 +1230,13 @@ exports.viewApplication = async (
 
 
 
-// ======================================================
-// VIEW RESUME FILE
-// GET /resume/view/:id
-// ======================================================
+/*    VIEW RESUME FILE
+      GET/resume/view/ :id
+
+
+      */
+
+
 
 exports.viewResumeFile = async (
     req,
@@ -1266,11 +1269,12 @@ exports.viewResumeFile = async (
             );
 
         }
+        
 
-
-        // ==================================================
-        // OWNERSHIP CHECK
-        // ==================================================
+                    //Ownership Check
+       /*
+         1. Check if the application exists and belongs to a job created by the logged-in user
+         /*
 
         const result =
             await db.query(
